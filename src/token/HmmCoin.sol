@@ -14,11 +14,13 @@ contract HmmCoin is Context, AccessControl, ERC20Capped, ERC20Burnable {
     // @param _initialSupply Initial supply of the contract that will be minted into owner's account
     // @param _maxSupply Maximum possible tokens cap
     function HmmCoin(uint256 _initialSupply, uint256 _maxSupply) ERC20(name, symbol) ERC20Capped(_maxSupply) {
+        require(_initialSupply <= _maxSupply, "HmmCoin: initial supply must be lower or equal max supply");
+
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
         _setupRole(MINTER_ROLE, _msgSender());
 
         _totalSupply = _initialSupply;
-        balances[owner] = _initialSupply;
+        balances[_msgSender()] = _initialSupply;
     }
 
     /**
@@ -31,7 +33,7 @@ contract HmmCoin is Context, AccessControl, ERC20Capped, ERC20Burnable {
      * - the caller must have the `MINTER_ROLE`.
      */
     function mint(address to, uint256 amount) public virtual {
-        require(hasRole(MINTER_ROLE, _msgSender()), "ERC20PresetMinterPauser: must have minter role to mint");
+        require(hasRole(MINTER_ROLE, _msgSender()), "HmmCoin: must have minter role to mint");
         _mint(to, amount);
     }
 }
