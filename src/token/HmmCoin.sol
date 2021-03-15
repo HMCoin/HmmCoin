@@ -1,7 +1,7 @@
 pragma solidity ^0.8.0;
 
 import "./ERC20/ERC20Capped.sol";
-import "../access/AccessControl.sol";
+import "../access/AccessControl.sol"; // TODO simplify to MinterRole?
 import "./ERC20/ERC20Burnable.sol";
 
 contract HmmCoin is Context, AccessControl, ERC20Capped, ERC20Burnable {
