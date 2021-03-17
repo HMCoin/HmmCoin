@@ -32,7 +32,7 @@ contract HmmCoin is Context, AccessControl, ERC20Capped, ERC20Burnable {
      *
      * - the caller must have the `MINTER_ROLE`.
      */
-    function mint(address to, uint256 amount) public virtual {
+    function mint(address to, uint256 amount) public {
         require(hasRole(MINTER_ROLE, _msgSender()), "HmmCoin: must have minter role to mint");
         _mint(to, amount);
     }
