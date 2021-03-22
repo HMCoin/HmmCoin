@@ -1,8 +1,6 @@
 pragma solidity ^0.8.0;
 
 import "../token/ERC20/IERC20.sol";
-import "../math/SafeMath.sol";
-import "../token/ERC20/SafeERC20.sol";
 import "../utils/ReentrancyGuard.sol";
 import "../utils/Context.sol";
 
@@ -49,21 +47,21 @@ contract Crowdsale is ReentrancyGuard, Context {
     );
 
     /**
-     * @param rate Number of token units a buyer gets per wei
+     * @param rate_ Number of token units a buyer gets per wei
      * @dev The rate is the conversion between wei and the smallest and indivisible
      * token unit. So, if you are using a rate of 1 with a ERC20Detailed token
      * with 3 decimals called TOK, 1 wei will give you 1 unit, or 0.001 TOK.
-     * @param wallet Address where collected funds will be forwarded to
-     * @param token Address of the token being sold
+     * @param wallet_ Address where collected funds will be forwarded to
+     * @param token_ Address of the token being sold
      */
-    constructor(uint256 rate, address wallet, IERC20 token) internal {
-        require(rate > 0);
-        require(wallet != address(0));
-        require(token != address(0));
+    constructor(uint256 rate_, address wallet_, IERC20 token_) internal {
+        require(rate_ > 0);
+        require(wallet_ != address(0));
+        require(token_ != address(0));
 
-        _rate = rate;
-        _wallet = wallet;
-        _token = token;
+        _rate = rate_;
+        _wallet = wallet_;
+        _token = token_;
     }
 
     // -----------------------------------------
@@ -76,7 +74,7 @@ contract Crowdsale is ReentrancyGuard, Context {
      * of 2300, which is not enough to call buyTokens. Consider calling
      * buyTokens directly when purchasing tokens from a contract.
      */
-    function () external payable {
+    fallback() external payable {
         buyTokens(_msgSender());
     }
 

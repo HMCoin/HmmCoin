@@ -1,5 +1,3 @@
-// external
-
 pragma solidity ^0.8.0;
 
 import "../access/AccessControl.sol";
@@ -10,7 +8,7 @@ contract Giveaway is AccessControl {
     uint256 public giveawayAmount;
     // TODO events?
 
-    function Giveaway(uint256 _amount) {
+    constructor(uint256 _amount) {
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
         giveawayAmount = _amount;
     }
@@ -19,10 +17,11 @@ contract Giveaway is AccessControl {
         return _token;
     }
 
-    function sendBatch(address[] _addrs) external {
+    function sendBatch(address[] memory _addrs) external {
         require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "Giveaway: must have owner role to execute giveaway");
+        uint256 addrsLength = _addrs.length;
 
-        for (uint256 i = 0; i < _addrs.length; i++) {
+        for (uint256 i = 0; i < addrsLength; i++) {
             _deliverTokens(_addrs[i], giveawayAmount);
         }
     }

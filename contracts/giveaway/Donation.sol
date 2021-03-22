@@ -9,11 +9,11 @@ contract Donation is AccessControl {
     event Withdrawal(address indexed addr, uint256 amount);
     event ContractDestroyed(address indexed contractAddress);
 
-    function Donation() {
+    constructor() {
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
     }
 
-    function () external payable {
+    fallback() external payable {
         donate(_msgSender());
     }
 
