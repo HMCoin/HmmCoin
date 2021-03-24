@@ -26,7 +26,7 @@ contract Giveaway is AccessControl {
         }
     }
 
-    function _deliverTokens(address beneficiary, uint256 tokenAmount) internal {
+    function _deliverTokens(address beneficiary, uint256 tokenAmount) internal virtual {
         _token.transfer(beneficiary, tokenAmount);
     }
 }

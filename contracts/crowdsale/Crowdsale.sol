@@ -21,7 +21,7 @@ contract Crowdsale is ReentrancyGuard, Context {
     IERC20 private _token;
 
     // Address where funds are collected
-    address private _wallet;
+    address payable private _wallet;
 
     // How many token units a buyer gets per wei.
     // The rate is the conversion between wei and the smallest and indivisible token unit.
@@ -54,10 +54,10 @@ contract Crowdsale is ReentrancyGuard, Context {
      * @param wallet_ Address where collected funds will be forwarded to
      * @param token_ Address of the token being sold
      */
-    constructor(uint256 rate_, address wallet_, IERC20 token_) internal {
+    constructor(uint256 rate_, address payable wallet_, IERC20 token_) {
         require(rate_ > 0);
         require(wallet_ != address(0));
-        require(token_ != address(0));
+        require(address(token_) != address(0));
 
         _rate = rate_;
         _wallet = wallet_;
@@ -156,7 +156,7 @@ contract Crowdsale is ReentrancyGuard, Context {
         address beneficiary,
         uint256 weiAmount
     )
-    internal
+    internal virtual
     view
     {
         require(beneficiary != address(0));
@@ -172,7 +172,7 @@ contract Crowdsale is ReentrancyGuard, Context {
         address beneficiary,
         uint256 weiAmount
     )
-    internal
+    internal virtual
     view
     {
         // optional override
@@ -187,7 +187,7 @@ contract Crowdsale is ReentrancyGuard, Context {
         address beneficiary,
         uint256 tokenAmount
     )
-    internal
+    internal virtual
     {
         _token.transfer(beneficiary, tokenAmount);
     }
@@ -201,7 +201,7 @@ contract Crowdsale is ReentrancyGuard, Context {
         address beneficiary,
         uint256 tokenAmount
     )
-    internal
+    internal virtual
     {
         _deliverTokens(beneficiary, tokenAmount);
     }
@@ -215,7 +215,7 @@ contract Crowdsale is ReentrancyGuard, Context {
         address beneficiary,
         uint256 weiAmount
     )
-    internal
+    internal virtual
     {
         // optional override
     }
@@ -226,7 +226,7 @@ contract Crowdsale is ReentrancyGuard, Context {
      * @return Number of tokens that can be purchased with the specified _weiAmount
      */
     function _getTokenAmount(uint256 weiAmount)
-    internal view returns (uint256)
+    internal virtual view returns (uint256)
     {
         return weiAmount * _rate;
     }
@@ -234,7 +234,7 @@ contract Crowdsale is ReentrancyGuard, Context {
     /**
      * @dev Determines how ETH is stored/forwarded on purchases.
      */
-    function _forwardFunds() internal {
+    function _forwardFunds() internal virtual {
         _wallet.transfer(msg.value);
     }
 }

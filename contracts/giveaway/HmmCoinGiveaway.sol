@@ -7,6 +7,6 @@ contract HmmCoinGiveaway is Giveaway {
     constructor(uint256 _amount) Giveaway(_amount) {}
 
     function _deliverTokens(address beneficiary, uint256 tokenAmount) internal override {
-        require(HmmCoin(address(token())).mint(beneficiary, tokenAmount)); // TODO erc20 mintable?
+        // TODO mint(beneficiary, tokenAmount)
     }
 }

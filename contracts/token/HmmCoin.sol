@@ -8,7 +8,7 @@ contract HmmCoin is Context, AccessControl, ERC20Capped, ERC20Burnable {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
     string private constant name_ = "HmmCoin";
-    string private constant symbol_ = "hmm";
+    string private constant symbol_ = "hmm"; // TODO move this?
 
     // @param _initialSupply Initial supply of the contract that will be minted into owner's account
     // @param _maxSupply Maximum possible tokens cap
@@ -18,9 +18,7 @@ contract HmmCoin is Context, AccessControl, ERC20Capped, ERC20Burnable {
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
         _setupRole(MINTER_ROLE, _msgSender());
 
-//        _totalSupply = _initialSupply;
-//        balances[_msgSender()] = _initialSupply;
-        mint(_msgSender(), _initialSupply);
+        ERC20._mint(_msgSender(), _initialSupply);
     }
 
     /**
@@ -35,5 +33,9 @@ contract HmmCoin is Context, AccessControl, ERC20Capped, ERC20Burnable {
     function mint(address to, uint256 amount) public {
         require(hasRole(MINTER_ROLE, _msgSender()), "HmmCoin: must have minter role to mint");
         _mint(to, amount);
+    }
+
+    function _mint(address account, uint256 amount) internal virtual override(ERC20, ERC20Capped) {
+        ERC20Capped._mint(account, amount);
     }
 }

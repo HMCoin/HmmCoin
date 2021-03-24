@@ -14,7 +14,7 @@ contract Donation is AccessControl {
     }
 
     fallback() external payable {
-        donate(_msgSender());
+        donate();
     }
 
     receive() external payable {
@@ -33,15 +33,15 @@ contract Donation is AccessControl {
     function withdraw(uint amount) public {
         require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "Donation: must have owner role to withdraw");
         require(amount > 0, "Donation: amount must be > 0");
-        require(amount <= this.balance, "Donation: amount must be <= current balance");
+        require(amount <= address(this).balance, "Donation: amount must be <= current balance");
 
-        _msgSender().transfer(amount);
+        payable(_msgSender()).transfer(amount);
     }
 
     function kill() external { // TODO move to Killable.sol?
         require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "Donation: must have owner role to destruct contract");
 
-        emit ContractDestroyed(this);
-        selfdestruct(_msgSender());
+        emit ContractDestroyed(payable(this));
+        selfdestruct(payable(_msgSender()));
     }
 }
