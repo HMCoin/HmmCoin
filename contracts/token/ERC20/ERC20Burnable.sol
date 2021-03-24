@@ -32,6 +32,7 @@ abstract contract ERC20Burnable is Context, ERC20 {
      * `amount`.
      */
     function burnFrom(address account, uint256 amount) public virtual {
+        require(account != address(0), "ERC20: burn from the zero address");
         require(allowance(account, _msgSender()) >= amount, "ERC20: burn amount exceeds allowance");
         _approve(account, _msgSender(), allowance(account, _msgSender()) - amount);
         _burn(account, amount);
