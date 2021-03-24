@@ -78,6 +78,10 @@ contract Crowdsale is ReentrancyGuard, Context {
         buyTokens(_msgSender());
     }
 
+    receive() external payable {
+        revert();
+    }
+
     /**
      * @return the token being sold.
      */

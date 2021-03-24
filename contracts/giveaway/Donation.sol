@@ -17,6 +17,10 @@ contract Donation is AccessControl {
         donate(_msgSender());
     }
 
+    receive() external payable {
+        revert();
+    }
+
     function donate() public payable {
         require(msg.value > 0, "Donation: value must be > 0");
 
