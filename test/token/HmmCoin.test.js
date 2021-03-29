@@ -22,6 +22,9 @@ contract('HmmCoin', function (accounts) {
     const initialSupply = new BN(100);
     const maxSupply = new BN(10000000);
 
+    const DEFAULT_ADMIN_ROLE = '0x0000000000000000000000000000000000000000000000000000000000000000';
+    const MINTER_ROLE = web3.utils.soliditySha3('MINTER_ROLE');
+
     beforeEach(async function () {
         this.token = await HmmCoin.new(name, symbol, initialHolder, initialSupply, maxSupply);
     });
@@ -54,6 +57,50 @@ contract('HmmCoin', function (accounts) {
         await expectRevert(
             HmmCoin.new(name, symbol, initialHolder, new BN(12), new BN(10)), 'HmmCoin: initial supply must be lower or equal max supply',
         );
+    });
+
+    it('initialHolder has the default admin role', async function () {
+        expect(await this.token.getRoleMemberCount(DEFAULT_ADMIN_ROLE)).to.be.bignumber.equal('1');
+        expect(await this.token.getRoleMember(DEFAULT_ADMIN_ROLE, 0)).to.equal(initialHolder);
+    });
+
+    it('initialHolder has the minter role', async function () {
+        expect(await this.token.getRoleMemberCount(MINTER_ROLE)).to.be.bignumber.equal('1');
+        expect(await this.token.getRoleMember(MINTER_ROLE, 0)).to.equal(initialHolder);
+    });
+
+    it('minter role admin is the default admin', async function () {
+        expect(await this.token.getRoleAdmin(MINTER_ROLE)).to.equal(DEFAULT_ADMIN_ROLE);
+    });
+
+    describe('minting', function () {
+        it('initialHolder can mint tokens', async function () {
+            const amount = new BN(5);
+            const receipt = await this.token.mint(recipient, amount, { from: initialHolder });
+            expectEvent(receipt, 'Transfer', { from: ZERO_ADDRESS, to: recipient, value: amount });
+
+            expect(await this.token.balanceOf(recipient)).to.be.bignumber.equal(amount);
+        });
+
+        it('other accounts cannot mint tokens', async function () {
+            const amount = new BN(5);
+            await expectRevert(
+                this.token.mint(recipient, amount, { from: anotherAccount }),
+                'HmmCoin: must have minter role to mint',
+            );
+        });
+    });
+
+    describe('burning', function () {
+        it('holders can burn their tokens', async function () {
+            const amount = new BN(5);
+            await this.token.mint(anotherAccount, amount, { from: initialHolder });
+
+            const receipt = await this.token.burn(amount.subn(1), { from: anotherAccount });
+            expectEvent(receipt, 'Transfer', { from: anotherAccount, to: ZERO_ADDRESS, value: amount.subn(1) });
+
+            expect(await this.token.balanceOf(anotherAccount)).to.be.bignumber.equal('1');
+        });
     });
 
     shouldBehaveLikeERC20('ERC20', initialSupply, initialHolder, recipient, anotherAccount);

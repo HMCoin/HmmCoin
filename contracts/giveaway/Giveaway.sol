@@ -4,7 +4,7 @@ import "../access/AccessControl.sol";
 import "../token/ERC20/IERC20.sol";
 
 contract Giveaway is AccessControl {
-    IERC20 private _token;
+    IERC20 private _token; // TODO set this
     uint256 public giveawayAmount;
     // TODO events?
 
