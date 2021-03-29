@@ -1,2 +1,2 @@
 # HmmCoin
-HmmCoin is a cryptocurrency running on ethereum blockchain.
+HmmCoin is a cryptocurrency running on Ethereum blockchain.
