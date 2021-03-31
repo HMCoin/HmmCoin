@@ -1,8 +1,8 @@
 pragma solidity ^0.8.0;
 
-import "../token/ERC20/IERC20.sol";
-import "../utils/ReentrancyGuard.sol";
-import "../utils/Context.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/Context.sol";
 
 /**
  * @title Crowdsale

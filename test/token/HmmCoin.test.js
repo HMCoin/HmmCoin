@@ -10,6 +10,7 @@ const {
 
 const { shouldBehaveLikeERC20Burnable } = require("./ERC20Burnable.behavior");
 const { shouldBehaveLikeERC20Capped } = require("./ERC20Capped.behavior");
+const { shouldBehaveLikeAccessControl } = require("../access/AccessControl.behavior");
 
 const HmmCoin = artifacts.require('HmmCoin');
 
@@ -27,6 +28,7 @@ contract('HmmCoin', function (accounts) {
 
     beforeEach(async function () {
         this.token = await HmmCoin.new(name, symbol, initialHolder, initialSupply, maxSupply);
+        this.accessControl = this.token;
     });
 
     it('has a name', async function () {
@@ -60,18 +62,14 @@ contract('HmmCoin', function (accounts) {
     });
 
     it('initialHolder has the default admin role', async function () {
-        expect(await this.token.getRoleMemberCount(DEFAULT_ADMIN_ROLE)).to.be.bignumber.equal('1');
-        expect(await this.token.getRoleMember(DEFAULT_ADMIN_ROLE, 0)).to.equal(initialHolder);
+        expect(await this.token.hasRole(DEFAULT_ADMIN_ROLE, initialHolder)).to.equal(true);
     });
 
     it('initialHolder has the minter role', async function () {
-        expect(await this.token.getRoleMemberCount(MINTER_ROLE)).to.be.bignumber.equal('1');
-        expect(await this.token.getRoleMember(MINTER_ROLE, 0)).to.equal(initialHolder);
+        expect(await this.token.hasRole(MINTER_ROLE, initialHolder)).to.equal(true);
     });
 
-    it('minter role admin is the default admin', async function () {
-        expect(await this.token.getRoleAdmin(MINTER_ROLE)).to.equal(DEFAULT_ADMIN_ROLE);
-    });
+    shouldBehaveLikeAccessControl('AccessControl', initialHolder, anotherAccount, recipient, initialHolder);
 
     describe('minting', function () {
         it('initialHolder can mint tokens', async function () {
@@ -305,7 +303,7 @@ contract('HmmCoin', function (accounts) {
     describe('_burn', function () {
         it('rejects a null account', async function () {
             await expectRevert(this.token.burnFrom(ZERO_ADDRESS, new BN(1)),
-                'ERC20: burn from the zero address');
+                'ERC20: burn amount exceeds allowance');
         });
 
         describe('for a non zero account', function () {

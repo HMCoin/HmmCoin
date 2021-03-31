@@ -1,6 +1,6 @@
 pragma solidity ^0.8.0;
 
-import "../access/AccessControl.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
 
 contract Donation is AccessControl {
     mapping (address => uint256) public donators;

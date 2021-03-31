@@ -1,10 +1,10 @@
 pragma solidity ^0.8.0;
 
-import "./ERC20/ERC20Capped.sol";
-import "../access/AccessControl.sol"; // TODO simplify to MinterRole?
-import "./ERC20/ERC20Burnable.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Capped.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 
-contract HmmCoin is Context, AccessControl, ERC20Capped, ERC20Burnable {
+contract HmmCoin is Context, AccessControl, ERC20Capped, ERC20Burnable { // TODO context
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
     // @param initialSupply_ Initial supply of the contract that will be minted into owner's account

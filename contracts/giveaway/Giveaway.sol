@@ -1,7 +1,7 @@
 pragma solidity ^0.8.0;
 
-import "../access/AccessControl.sol";
-import "../token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract Giveaway is AccessControl {
     IERC20 private _token; // TODO set this
