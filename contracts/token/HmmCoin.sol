@@ -3,8 +3,9 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Capped.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
+import "./TokenGiveaway.sol";
 
-contract HmmCoin is Context, AccessControl, ERC20Capped, ERC20Burnable { // TODO context
+contract HmmCoin is AccessControl, ERC20Capped, ERC20Burnable, TokenGiveaway {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
     // @param initialSupply_ Initial supply of the contract that will be minted into owner's account
@@ -22,7 +23,7 @@ contract HmmCoin is Context, AccessControl, ERC20Capped, ERC20Burnable { // TODO
     }
 
     /**
-    * @dev Creates `amount` new tokens for `to`.
+     * @dev Creates `amount` new tokens for `to`.
      *
      * See {ERC20-_mint}.
      *
@@ -37,5 +38,14 @@ contract HmmCoin is Context, AccessControl, ERC20Capped, ERC20Burnable { // TODO
 
     function _mint(address account, uint256 amount) internal virtual override(ERC20, ERC20Capped) {
         ERC20Capped._mint(account, amount);
+    }
+
+    // giveaway mechanism
+    function _deliverTokens(address beneficiary, uint256 tokenAmount) internal override {
+        _mint(beneficiary, tokenAmount);
+    }
+
+    function _getTokenAmount() internal override view returns (uint256) {
+        return 42; // TODO
     }
 }

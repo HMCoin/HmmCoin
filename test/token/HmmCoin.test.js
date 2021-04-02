@@ -69,6 +69,36 @@ contract('HmmCoin', function (accounts) {
         expect(await this.token.hasRole(MINTER_ROLE, initialHolder)).to.equal(true);
     });
 
+    describe('TokenGiveaway', function () {
+        describe('getTokens', function () {
+            it('emits TokensGivenAway event', async function () {
+                const amountExpected = new BN(42);
+                const receipt = await this.token.getTokens(anotherAccount);
+
+                expectEvent(receipt, 'TokensGivenAway', { beneficiary: anotherAccount, amount: amountExpected });
+            });
+
+            it('mints the tokens', async function () {
+                const amountExpected = new BN(42);
+                const receipt = await this.token.getTokens(anotherAccount);
+
+                expectEvent(receipt, 'Transfer', { from: ZERO_ADDRESS, to: anotherAccount, value: amountExpected });
+            });
+
+            it('delivers the tokens', async function () {
+                const amountExpected = new BN(42);
+                await this.token.getTokens(anotherAccount);
+
+                expect(await this.token.balanceOf(anotherAccount)).to.be.bignumber.equal(amountExpected);
+            });
+
+            it('fails when beneficiary is zero address', async function () {
+                await expectRevert(this.token.getTokens(ZERO_ADDRESS), 'TokenGiveaway: beneficiary must be non-zero address');
+            });
+            // TODO
+        });
+    });
+
     shouldBehaveLikeAccessControl('AccessControl', initialHolder, anotherAccount, recipient, initialHolder);
 
     describe('minting', function () {
