@@ -48,9 +48,5 @@ contract HmmCoinCrowdsale is Crowdsale {
         return weiAmount * rate();
     }
 
-
-
-    // TODO _preValidatePurchase capped?
-    // TODO _getTokenAmount to calculate token amount
     // TODO _forwardFunds when? on demand?
 }

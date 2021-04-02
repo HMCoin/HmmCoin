@@ -9,8 +9,9 @@ contract Donation is AccessControl {
     event Withdrawal(address indexed addr, uint256 amount);
     event ContractDestroyed(address indexed contractAddress);
 
-    constructor() {
-        _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
+    constructor(address owner) {
+        require(owner != address(0), "Donation: owner must be non-zero address");
+        _setupRole(DEFAULT_ADMIN_ROLE, owner);
     }
 
     fallback() external payable {
@@ -33,7 +34,7 @@ contract Donation is AccessControl {
     function withdraw(uint amount) public {
         require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "Donation: must have owner role to withdraw");
         require(amount > 0, "Donation: amount must be > 0");
-        require(amount <= address(this).balance, "Donation: amount must be <= current balance");
+        require(amount < address(this).balance, "Donation: amount must be <= current balance");
 
         payable(_msgSender()).transfer(amount);
     }

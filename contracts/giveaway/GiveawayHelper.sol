@@ -8,10 +8,11 @@ contract GiveawayHelper is AccessControl {
     uint256 public giveawayAmount;
     // TODO limits, daily
 
-    constructor(uint256 _amount, IERC20 token_) { // TODO set admin here and everywhere
+    constructor(uint256 _amount, IERC20 token_, address owner) {
         require(address(token_) != address(0));
+        require(owner != address(0), "GiveawayHelper: owner must be non-zero address");
 
-        _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
+        _setupRole(DEFAULT_ADMIN_ROLE, owner);
         giveawayAmount = _amount;
         _token = token_;
     }
