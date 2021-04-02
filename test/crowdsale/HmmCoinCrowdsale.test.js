@@ -17,10 +17,11 @@ contract('HmmCoinCrowdsale', function (accounts) {
     const MINTER_ROLE = web3.utils.soliditySha3('MINTER_ROLE');
 
     const rate = 3;
+    const cap = new BN(10000);
 
     beforeEach(async function () {
         this.token = await HmmCoin.new(name, symbol, initialHolder, initialSupply, maxSupply);
-        this.crowdsale = await HmmCoinCrowdsale.new(rate, recipient, this.token.address);
+        this.crowdsale = await HmmCoinCrowdsale.new(rate, recipient, this.token.address, cap);
         await this.token.grantRole(MINTER_ROLE, this.crowdsale.address);
     });
 
@@ -32,6 +33,33 @@ contract('HmmCoinCrowdsale', function (accounts) {
         expect(await this.crowdsale.wallet()).to.equal(recipient);
     });
 
+    describe('cappedCrowdsale', function () {
+        it('starts with the correct cap', async function () {
+            expect(await this.crowdsale.cap()).to.be.bignumber.equal(cap);
+        });
+
+        it('sells when amount is less than cap', async function () {
+            const valueWei = cap.subn(1);
+            const amountBought = valueWei.muln(rate);
+
+            await this.crowdsale.buyTokens(anotherAccount, { value: valueWei, from: anotherAccount });
+
+            expect(await this.token.balanceOf(anotherAccount)).to.be.bignumber.equal(amountBought);
+        });
+
+        it('fails to sell if the amount exceeds the cap', async function () {
+            const valueWei = cap.subn(1);
+
+            await this.crowdsale.buyTokens(anotherAccount, { value: valueWei, from: anotherAccount });
+            await expectRevert(this.crowdsale.buyTokens(anotherAccount, { value: 2, from: anotherAccount }), 'HmmCoinCrowdsale: cap exceeded');
+        });
+
+        it('fails to sell after cap is reached', async function () {
+            await this.crowdsale.buyTokens(anotherAccount, { value: cap, from: anotherAccount });
+            await expectRevert(this.crowdsale.buyTokens(anotherAccount, { value: 1, from: anotherAccount }), 'HmmCoinCrowdsale: cap exceeded');
+        });
+    });
+
     describe('buyTokens', function () {
         it('emits TokensPurchased event', async function () {
             const valueWei = new BN(1000);
@@ -41,7 +69,7 @@ contract('HmmCoinCrowdsale', function (accounts) {
             expectEvent(receipt, 'TokensPurchased', { purchaser: initialHolder, beneficiary: anotherAccount, value: valueWei, amount: amountBought });
         });
 
-        it('mints tokens', async function () {
+        it('mints the tokens', async function () {
             const valueWei = new BN(1000);
             const amountBought = valueWei.muln(rate);
 
