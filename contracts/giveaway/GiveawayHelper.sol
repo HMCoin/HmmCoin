@@ -3,16 +3,17 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-contract Giveaway is AccessControl {
-    IERC20 private _token; // TODO set this
+contract GiveawayHelper is AccessControl {
+    IERC20 private _token;
     uint256 public giveawayAmount;
     // TODO limits, daily
-    // TODO 20% limit
-    // TODO increasing user id
 
-    constructor(uint256 _amount) {
+    constructor(uint256 _amount, IERC20 token_) { // TODO set admin here and everywhere
+        require(address(token_) != address(0));
+
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
         giveawayAmount = _amount;
+        _token = token_;
     }
 
     function token() public view returns(IERC20) {

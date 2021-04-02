@@ -91,4 +91,5 @@ contract('HmmCoinCrowdsale', function (accounts) {
             expect(await this.token.balanceOf(anotherAccount)).to.be.bignumber.equal(prevBalance.add(amountBought));
         });
     });
+    // TODO
 });

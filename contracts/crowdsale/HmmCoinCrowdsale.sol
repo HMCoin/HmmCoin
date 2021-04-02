@@ -25,7 +25,7 @@ contract HmmCoinCrowdsale is Crowdsale {
      * @param tokenAmount Number of tokens to be minted
      */
     function _deliverTokens(address beneficiary, uint256 tokenAmount) internal override {
-        HmmCoin(address(token())).mint(beneficiary, tokenAmount); // TODO require?
+        HmmCoin(address(token())).mint(beneficiary, tokenAmount);
     }
 
     /**

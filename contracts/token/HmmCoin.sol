@@ -36,6 +36,8 @@ contract HmmCoin is AccessControl, ERC20Capped, ERC20Burnable, TokenGiveaway {
         _mint(to, amount);
     }
 
+    // internal functions
+
     function _mint(address account, uint256 amount) internal virtual override(ERC20, ERC20Capped) {
         ERC20Capped._mint(account, amount);
     }
