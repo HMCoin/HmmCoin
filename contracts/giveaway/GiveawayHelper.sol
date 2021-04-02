@@ -6,6 +6,9 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 contract Giveaway is AccessControl {
     IERC20 private _token; // TODO set this
     uint256 public giveawayAmount;
+    // TODO limits, daily
+    // TODO 20% limit
+    // TODO increasing user id
 
     constructor(uint256 _amount) {
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
