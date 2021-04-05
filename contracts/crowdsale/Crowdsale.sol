@@ -55,9 +55,9 @@ contract Crowdsale is ReentrancyGuard, Context {
      * @param token_ Address of the token being sold
      */
     constructor(uint256 rate_, address payable wallet_, IERC20 token_) {
-        require(rate_ > 0);
-        require(wallet_ != address(0));
-        require(address(token_) != address(0));
+        require(rate_ > 0, "Crowdsale: rate must be > 0");
+        require(wallet_ != address(0), "Crowdsale: wallet must be non-zero address");
+        require(address(token_) != address(0), "Crowdsale: token must be non-zero address");
 
         _rate = rate_;
         _wallet = wallet_;
@@ -159,8 +159,8 @@ contract Crowdsale is ReentrancyGuard, Context {
     internal virtual
     view
     {
-        require(beneficiary != address(0));
-        require(weiAmount != 0);
+        require(beneficiary != address(0), "Crowdsale: beneficiary must be non-zero address");
+        require(weiAmount != 0, "Crowdsale: wei amount is zero");
     }
 
     /**

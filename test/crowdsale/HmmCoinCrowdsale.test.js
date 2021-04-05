@@ -16,7 +16,7 @@ contract('HmmCoinCrowdsale', function (accounts) {
 
     const MINTER_ROLE = web3.utils.soliditySha3('MINTER_ROLE');
 
-    const rate = 3;
+    const rate = new BN(3);
     const cap = new BN(10000);
 
     beforeEach(async function () {
@@ -33,14 +33,56 @@ contract('HmmCoinCrowdsale', function (accounts) {
         expect(await this.crowdsale.wallet()).to.equal(recipient);
     });
 
+    it('should store the exchange rate', async function () {
+        let a = await this.crowdsale.rate();
+        expect(await this.crowdsale.rate()).to.be.bignumber.equal(rate);
+    });
+
+    it('should store the wei raised', async function () {
+        expect(await this.crowdsale.weiRaised()).to.be.bignumber.equal(new BN(0));
+
+        await this.crowdsale.buyTokens(anotherAccount, { value: new BN(100), from: anotherAccount });
+        expect(await this.crowdsale.weiRaised()).to.be.bignumber.equal(new BN(100));
+
+        await this.crowdsale.buyTokens(anotherAccount, { value: new BN(42), from: anotherAccount });
+        expect(await this.crowdsale.weiRaised()).to.be.bignumber.equal(new BN(142));
+
+        await this.crowdsale.buyTokens(initialHolder, { value: new BN(58), from: initialHolder });
+        expect(await this.crowdsale.weiRaised()).to.be.bignumber.equal(new BN(200));
+    });
+
+    it('requires a rate > 0', async function () {
+        await expectRevert(
+            HmmCoinCrowdsale.new(0, recipient, this.token.address, cap), 'Crowdsale: rate must be > 0',
+        );
+    });
+
+    it('requires a non-zero wallet address', async function () {
+        await expectRevert(
+            HmmCoinCrowdsale.new(rate, ZERO_ADDRESS, this.token.address, cap), 'Crowdsale: wallet must be non-zero address',
+        );
+    });
+
+    it('requires a non-zero token address', async function () {
+        await expectRevert(
+            HmmCoinCrowdsale.new(rate, recipient, ZERO_ADDRESS, cap), 'Crowdsale: token must be non-zero address',
+        );
+    });
+
     describe('cappedCrowdsale', function () {
-        it('starts with the correct cap', async function () {
+        it('requires a cap > 0', async function () {
+            await expectRevert(
+                HmmCoinCrowdsale.new(rate, recipient, this.token.address, 0), 'HmmCoinCrowdsale: cap must be > 0',
+            );
+        });
+
+        it('should store the correct cap', async function () {
             expect(await this.crowdsale.cap()).to.be.bignumber.equal(cap);
         });
 
         it('sells when amount is less than cap', async function () {
             const valueWei = cap.subn(1);
-            const amountBought = valueWei.muln(rate);
+            const amountBought = valueWei.mul(rate);
 
             await this.crowdsale.buyTokens(anotherAccount, { value: valueWei, from: anotherAccount });
 
@@ -63,7 +105,7 @@ contract('HmmCoinCrowdsale', function (accounts) {
     describe('buyTokens', function () {
         it('emits TokensPurchased event', async function () {
             const valueWei = new BN(1000);
-            const amountBought = valueWei.muln(rate);
+            const amountBought = valueWei.mul(rate);
 
             const receipt = await this.crowdsale.buyTokens(anotherAccount, { value: valueWei, from: initialHolder });
             expectEvent(receipt, 'TokensPurchased', { purchaser: initialHolder, beneficiary: anotherAccount, value: valueWei, amount: amountBought });
@@ -71,7 +113,7 @@ contract('HmmCoinCrowdsale', function (accounts) {
 
         it('mints the tokens', async function () {
             const valueWei = new BN(1000);
-            const amountBought = valueWei.muln(rate);
+            const amountBought = valueWei.mul(rate);
 
             await this.crowdsale.buyTokens(anotherAccount, { value: valueWei, from: initialHolder });
 
@@ -83,13 +125,26 @@ contract('HmmCoinCrowdsale', function (accounts) {
 
         it('buys 30 tokens for 10 wei', async function () {
             const valueWei = new BN(10);
-            const amountBought = valueWei.muln(rate);
+            const amountBought = valueWei.mul(rate);
             const prevBalance = await this.token.balanceOf(anotherAccount);
 
             await this.crowdsale.buyTokens(anotherAccount, { value: valueWei, from: initialHolder });
 
             expect(await this.token.balanceOf(anotherAccount)).to.be.bignumber.equal(prevBalance.add(amountBought));
         });
+
+        it('fails when beneficiary is zero address', async function () {
+            const valueWei = new BN(10);
+
+            await expectRevert(this.crowdsale.buyTokens(ZERO_ADDRESS, { value: valueWei, from: initialHolder }), 'Crowdsale: beneficiary must be non-zero address');
+        });
+
+        it('fails when wei value is zero', async function () {
+            const valueWei = new BN(0);
+
+            await expectRevert(this.crowdsale.buyTokens(recipient, { value: valueWei, from: initialHolder }), 'Crowdsale: wei amount is zero');
+        });
     });
-    // TODO
+    // TODO test _forwardFund
+    // TODO test _getTokenAmount
 });

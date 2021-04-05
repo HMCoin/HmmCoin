@@ -45,7 +45,7 @@ contract HmmCoinCrowdsale is Crowdsale {
      */
     function _getTokenAmount(uint256 weiAmount) internal override view returns (uint256)
     {
-        return weiAmount * rate();
+        return weiAmount * rate(); // TODO
     }
 
     // TODO _forwardFunds when? on demand?
