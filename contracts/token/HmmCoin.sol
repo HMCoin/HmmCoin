@@ -47,6 +47,7 @@ contract HmmCoin is AccessControl, ERC20Capped, ERC20Burnable, TokenGiveaway {
         _mint(beneficiary, tokenAmount);
     }
 
+    // giveaway mechanism
     function _getTokenAmount() internal override view returns (uint256) {
         return 42; // TODO
     }

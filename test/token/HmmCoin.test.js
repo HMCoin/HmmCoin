@@ -95,7 +95,7 @@ contract('HmmCoin', function (accounts) {
             it('fails when beneficiary is zero address', async function () {
                 await expectRevert(this.token.getTokens(ZERO_ADDRESS), 'TokenGiveaway: beneficiary must be non-zero address');
             });
-            // TODO
+            // TODO test _getTokenAmount
         });
     });
 
@@ -105,9 +105,32 @@ contract('HmmCoin', function (accounts) {
         it('initialHolder can mint tokens', async function () {
             const amount = new BN(5);
             const receipt = await this.token.mint(recipient, amount, { from: initialHolder });
-            expectEvent(receipt, 'Transfer', { from: ZERO_ADDRESS, to: recipient, value: amount });
 
+            expectEvent(receipt, 'Transfer', { from: ZERO_ADDRESS, to: recipient, value: amount });
             expect(await this.token.balanceOf(recipient)).to.be.bignumber.equal(amount);
+        });
+
+        it('minter can mint tokens', async function () {
+            await this.token.grantRole(MINTER_ROLE, anotherAccount);
+            const amount = new BN(5);
+            const receipt = await this.token.mint(recipient, amount, { from: anotherAccount });
+
+            expectEvent(receipt, 'Transfer', { from: ZERO_ADDRESS, to: recipient, value: amount });
+            expect(await this.token.balanceOf(recipient)).to.be.bignumber.equal(amount);
+        });
+
+        it('accepts multiple MINTER_ROLE roles', async function () {
+            await this.token.grantRole(MINTER_ROLE, anotherAccount);
+            await this.token.grantRole(MINTER_ROLE, recipient);
+            const amount = new BN(5);
+
+            let receipt = await this.token.mint(recipient, amount, { from: anotherAccount });
+            expectEvent(receipt, 'Transfer', { from: ZERO_ADDRESS, to: recipient, value: amount });
+            expect(await this.token.balanceOf(recipient)).to.be.bignumber.equal(amount);
+
+            receipt = await this.token.mint(anotherAccount, amount, { from: recipient });
+            expectEvent(receipt, 'Transfer', { from: ZERO_ADDRESS, to: anotherAccount, value: amount });
+            expect(await this.token.balanceOf(anotherAccount)).to.be.bignumber.equal(amount);
         });
 
         it('other accounts cannot mint tokens', async function () {

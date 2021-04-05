@@ -78,4 +78,6 @@ contract('HmmCoinGiveawayHelper', function (accounts) {
             expect(await this.token.balanceOf(initialHolder)).to.be.bignumber.equal(giveawayAmount);
         });
     });
+
+    // TODO test giveaway amount, limits
 });
