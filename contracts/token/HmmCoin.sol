@@ -5,14 +5,14 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "./TokenGiveaway.sol";
 
-contract HmmCoin is AccessControl, ERC20Capped, ERC20Burnable, TokenGiveaway {
+contract HmmCoin is ERC20Capped, ERC20Burnable, TokenGiveaway {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
     // @param initialSupply_ Initial supply of the contract that will be minted into owner's account
     // @param maxSupply_ Maximum possible tokens cap
     // @param owner Will be set as DEFAULT_ADMIN_ROLE, MINTER_ROLE and have the _initialSupply tokens
     constructor(string memory name_, string memory symbol_, address owner, uint256 initialSupply_, uint256 maxSupply_)
-    ERC20(name_, symbol_) ERC20Capped(maxSupply_) {
+    ERC20(name_, symbol_) ERC20Capped(maxSupply_) TokenGiveaway(owner) {
         require(initialSupply_ <= maxSupply_, "HmmCoin: initial supply must be lower or equal max supply");
         require(owner != address(0), "HmmCoin: owner must be non-zero address");
 

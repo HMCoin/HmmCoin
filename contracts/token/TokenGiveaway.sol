@@ -2,20 +2,37 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/security/Pausable.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
 
 /**
  * @dev Extension of {ERC20} that adds ability to request tokens.
  */
-abstract contract TokenGiveaway is ERC20, ReentrancyGuard { // TODO pausable?
+abstract contract TokenGiveaway is ERC20, ReentrancyGuard, Pausable, AccessControl {
+    constructor(address owner) {
+        require(owner != address(0), "TokenGiveaway: owner must be non-zero address");
+        _setupRole(DEFAULT_ADMIN_ROLE, owner);
+    }
+
     event TokensGivenAway(
         address indexed beneficiary,
         uint256 amount
     );
 
+    function pauseGiveaway() public {
+        require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "TokenGiveaway: must have owner role to pause");
+        _pause();
+    }
+
+    function unpauseGiveaway() public {
+        require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "TokenGiveaway: must have owner role to unpause");
+        _unpause();
+    }
+
     /**
      * @param beneficiary Recipient of the token purchase
      */
-    function getTokens(address beneficiary) public nonReentrant {
+    function getTokens(address beneficiary) public nonReentrant whenNotPaused {
         _preValidateRequest(beneficiary);
 
         // calculate token amount to be created
