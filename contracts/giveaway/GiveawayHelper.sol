@@ -9,8 +9,9 @@ contract GiveawayHelper is AccessControl {
     // TODO limits, daily
 
     constructor(uint256 _amount, IERC20 token_, address owner) {
-        require(address(token_) != address(0));
+        require(address(token_) != address(0), "GiveawayHelper: token must be non-zero address");
         require(owner != address(0), "GiveawayHelper: owner must be non-zero address");
+        require(_amount > 0, "GiveawayHelper: amount must be > 0");
 
         _setupRole(DEFAULT_ADMIN_ROLE, owner);
         giveawayAmount = _amount;
@@ -22,7 +23,7 @@ contract GiveawayHelper is AccessControl {
     }
 
     function sendBatch(address[] memory _addrs) external {
-        require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "Giveaway: must have owner role to execute giveaway");
+        require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "GiveawayHelper: must have owner role to execute giveaway");
         uint256 addrsLength = _addrs.length;
 
         for (uint256 i = 0; i < addrsLength; i++) {
