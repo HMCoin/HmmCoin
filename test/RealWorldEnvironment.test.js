@@ -24,10 +24,11 @@ contract('RealWorldEnvironment', function (accounts) {
 
     beforeEach(async function () {
         // the thing is to have the real world migrations here
+        // TODO real params
         this.token = await HmmCoin.new(name, symbol, initialHolder, initialSupply, maxSupply);
         this.giveawayHelper = await HmmCoinGiveawayHelper.new(giveawayAmount, this.token.address, initialHolder);
         await this.token.grantRole(MINTER_ROLE, this.giveawayHelper.address);
-        this.crowdsale = await HmmCoinCrowdsale.new(rate, initialHolder, this.token.address, cap);
+        this.crowdsale = await HmmCoinCrowdsale.new(rate, this.token.address, cap, initialHolder);
         await this.token.grantRole(MINTER_ROLE, this.crowdsale.address);
     });
 

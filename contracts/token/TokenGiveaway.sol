@@ -38,9 +38,6 @@ abstract contract TokenGiveaway is ERC20, ReentrancyGuard, Pausable, AccessContr
         // calculate token amount to be created
         uint256 tokens = _getTokenAmount();
 
-        // update state
-        // TODO user id, tokens given
-
         _processRequest(beneficiary, tokens);
         emit TokensGivenAway(
             beneficiary,

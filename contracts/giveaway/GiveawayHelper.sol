@@ -6,7 +6,6 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 contract GiveawayHelper is AccessControl {
     IERC20 private _token;
     uint256 public giveawayAmount;
-    // TODO limits, daily
 
     constructor(uint256 _amount, IERC20 token_, address owner) {
         require(address(token_) != address(0), "GiveawayHelper: token must be non-zero address");

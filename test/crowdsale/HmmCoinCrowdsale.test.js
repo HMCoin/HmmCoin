@@ -83,7 +83,7 @@ contract('HmmCoinCrowdsale', function (accounts) {
             await this.crowdsale.buyTokens(anotherAccount, { value: 5000, from: anotherAccount });
 
             await expectRevert(
-                this.crowdsale.forwardFunds(recipient, 6000, { from: initialHolder }), 'HmmCoinCrowdsale: amount must be < current balance',
+                this.crowdsale.forwardFunds(recipient, 6000, { from: initialHolder }), 'HmmCoinCrowdsale: amount must be <= current balance',
             );
         });
 
