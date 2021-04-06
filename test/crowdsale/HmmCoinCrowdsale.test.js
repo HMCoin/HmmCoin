@@ -2,6 +2,8 @@ const { BN, constants, expectEvent, expectRevert } = require('@openzeppelin/test
 const { ZERO_ADDRESS } = constants;
 const { expect } = require('chai');
 
+const { shouldBehaveLikeAccessControl } = require("../access/AccessControl.behavior");
+
 const HmmCoinCrowdsale = artifacts.require('HmmCoinCrowdsale');
 const HmmCoin = artifacts.require('HmmCoin');
 
@@ -21,16 +23,15 @@ contract('HmmCoinCrowdsale', function (accounts) {
 
     beforeEach(async function () {
         this.token = await HmmCoin.new(name, symbol, initialHolder, initialSupply, maxSupply);
-        this.crowdsale = await HmmCoinCrowdsale.new(rate, recipient, this.token.address, cap);
+        this.crowdsale = await HmmCoinCrowdsale.new(rate, this.token.address, cap, initialHolder);
         await this.token.grantRole(MINTER_ROLE, this.crowdsale.address);
+        this.accessControl = this.crowdsale;
     });
+
+    shouldBehaveLikeAccessControl('AccessControl', initialHolder, anotherAccount, recipient, initialHolder);
 
     it('should store the token address', async function () {
         expect(await this.crowdsale.token()).to.equal(this.token.address);
-    });
-
-    it('should store the recipient wallet', async function () {
-        expect(await this.crowdsale.wallet()).to.equal(recipient);
     });
 
     it('should store the exchange rate', async function () {
@@ -53,26 +54,61 @@ contract('HmmCoinCrowdsale', function (accounts) {
 
     it('requires a rate > 0', async function () {
         await expectRevert(
-            HmmCoinCrowdsale.new(0, recipient, this.token.address, cap), 'Crowdsale: rate must be > 0',
-        );
-    });
-
-    it('requires a non-zero wallet address', async function () {
-        await expectRevert(
-            HmmCoinCrowdsale.new(rate, ZERO_ADDRESS, this.token.address, cap), 'Crowdsale: wallet must be non-zero address',
+            HmmCoinCrowdsale.new(0, this.token.address, cap, initialHolder), 'Crowdsale: rate must be > 0',
         );
     });
 
     it('requires a non-zero token address', async function () {
         await expectRevert(
-            HmmCoinCrowdsale.new(rate, recipient, ZERO_ADDRESS, cap), 'Crowdsale: token must be non-zero address',
+            HmmCoinCrowdsale.new(rate, ZERO_ADDRESS, cap, initialHolder), 'Crowdsale: token must be non-zero address',
         );
+    });
+
+    it('requires a non-zero owner address', async function () {
+        await expectRevert(
+            HmmCoinCrowdsale.new(rate, this.token.address, cap, ZERO_ADDRESS), 'HmmCoinCrowdsale: owner must be non-zero address',
+        );
+    });
+
+    describe('forwardFunds', function () {
+        it('fails when called by non-admin', async function () {
+            await this.crowdsale.buyTokens(anotherAccount, { value: 999, from: anotherAccount });
+
+            await expectRevert(
+                this.crowdsale.forwardFunds(initialHolder, 1, { from: anotherAccount }), 'HmmCoinCrowdsale: must have owner role to withdraw',
+            );
+        });
+
+        it('fails when trying to withdraw too much', async function () {
+            await this.crowdsale.buyTokens(anotherAccount, { value: 5000, from: anotherAccount });
+
+            await expectRevert(
+                this.crowdsale.forwardFunds(recipient, 6000, { from: initialHolder }), 'HmmCoinCrowdsale: amount must be < current balance',
+            );
+        });
+
+        it('fails when amount is zero', async function () {
+            await this.crowdsale.buyTokens(anotherAccount, { value: 5000, from: anotherAccount });
+
+            await expectRevert(
+                this.crowdsale.forwardFunds(recipient, 0, { from: initialHolder }), 'HmmCoinCrowdsale: amount must be > 0',
+            );
+        });
+
+        it('forwards funds', async function () {
+            const prevBalance = await web3.eth.getBalance(recipient);
+            await this.crowdsale.buyTokens(anotherAccount, { value: new BN(5000), from: anotherAccount });
+            await this.crowdsale.forwardFunds(recipient, new BN(4000), { from: initialHolder });
+
+            expect(await web3.eth.getBalance(recipient)).to.be.bignumber.equal(new BN(prevBalance).addn(4000));
+            expect(await web3.eth.getBalance(this.crowdsale.address)).to.be.bignumber.equal(new BN(1000));
+        });
     });
 
     describe('cappedCrowdsale', function () {
         it('requires a cap > 0', async function () {
             await expectRevert(
-                HmmCoinCrowdsale.new(rate, recipient, this.token.address, 0), 'HmmCoinCrowdsale: cap must be > 0',
+                HmmCoinCrowdsale.new(rate, this.token.address, 0, initialHolder), 'HmmCoinCrowdsale: cap must be > 0',
             );
         });
 
@@ -103,6 +139,13 @@ contract('HmmCoinCrowdsale', function (accounts) {
     });
 
     describe('buyTokens', function () {
+        it('stores funds', async function () {
+            const valueWei = new BN(5000);
+            await this.crowdsale.buyTokens(anotherAccount, { value: valueWei, from: anotherAccount });
+
+            expect(await web3.eth.getBalance(this.crowdsale.address)).to.be.bignumber.equal(new BN(valueWei));
+        });
+
         it('emits TokensPurchased event', async function () {
             const valueWei = new BN(1000);
             const amountBought = valueWei.mul(rate);
@@ -145,6 +188,5 @@ contract('HmmCoinCrowdsale', function (accounts) {
             await expectRevert(this.crowdsale.buyTokens(recipient, { value: valueWei, from: initialHolder }), 'Crowdsale: wei amount is zero');
         });
     });
-    // TODO test _forwardFund
     // TODO test _getTokenAmount
 });

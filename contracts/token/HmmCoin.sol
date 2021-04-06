@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "./TokenGiveaway.sol";
 
-contract HmmCoin is ERC20Capped, ERC20Burnable, TokenGiveaway {
+contract HmmCoin is ERC20Capped, ERC20Burnable, TokenGiveaway { // TODO upgradable
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
     // @param initialSupply_ Initial supply of the contract that will be minted into owner's account

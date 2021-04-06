@@ -31,12 +31,12 @@ contract Donation is AccessControl {
         emit NewDonation(_msgSender(), msg.value);
     }
 
-    function withdraw(uint amount) public {
+    function withdraw(address payable recipient, uint256 amount) public {
         require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "Donation: must have owner role to withdraw");
         require(amount > 0, "Donation: amount must be > 0");
-        require(amount < address(this).balance, "Donation: amount must be <= current balance");
+        require(amount <= address(this).balance, "Donation: amount must be <= current balance");
 
-        payable(_msgSender()).transfer(amount);
+        recipient.transfer(amount);
     }
 
     function kill() external { // TODO move to Killable.sol?

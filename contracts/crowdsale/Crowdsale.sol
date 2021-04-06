@@ -15,13 +15,12 @@ import "@openzeppelin/contracts/utils/Context.sol";
  * The internal interface conforms the extensible and modifiable surface of crowdsales. Override
  * the methods to add functionality. Consider using 'super' where appropriate to concatenate
  * behavior.
+ *
+ * There is no withdrawal functionality implemented here. Deriving contract should implement it by itself.
  */
-contract Crowdsale is ReentrancyGuard, Context {
+abstract contract Crowdsale is ReentrancyGuard, Context {
     // The token being sold
     IERC20 private _token;
-
-    // Address where funds are collected
-    address payable private _wallet;
 
     // How many token units a buyer gets per wei.
     // The rate is the conversion between wei and the smallest and indivisible token unit.
@@ -51,16 +50,13 @@ contract Crowdsale is ReentrancyGuard, Context {
      * @dev The rate is the conversion between wei and the smallest and indivisible
      * token unit. So, if you are using a rate of 1 with a ERC20Detailed token
      * with 3 decimals called TOK, 1 wei will give you 1 unit, or 0.001 TOK.
-     * @param wallet_ Address where collected funds will be forwarded to
      * @param token_ Address of the token being sold
      */
-    constructor(uint256 rate_, address payable wallet_, IERC20 token_) {
+    constructor(uint256 rate_, IERC20 token_) {
         require(rate_ > 0, "Crowdsale: rate must be > 0");
-        require(wallet_ != address(0), "Crowdsale: wallet must be non-zero address");
         require(address(token_) != address(0), "Crowdsale: token must be non-zero address");
 
         _rate = rate_;
-        _wallet = wallet_;
         _token = token_;
     }
 
@@ -87,13 +83,6 @@ contract Crowdsale is ReentrancyGuard, Context {
      */
     function token() public view returns(IERC20) {
         return _token;
-    }
-
-    /**
-     * @return the address where funds are collected.
-     */
-    function wallet() public view returns(address) {
-        return _wallet;
     }
 
     /**
@@ -135,8 +124,6 @@ contract Crowdsale is ReentrancyGuard, Context {
         );
 
         _updatePurchasingState(beneficiary, weiAmount);
-
-        _forwardFunds();
         _postValidatePurchase(beneficiary, weiAmount);
     }
 
@@ -229,12 +216,5 @@ contract Crowdsale is ReentrancyGuard, Context {
     internal virtual view returns (uint256)
     {
         return weiAmount * _rate;
-    }
-
-    /**
-     * @dev Determines how ETH is stored/forwarded on purchases.
-     */
-    function _forwardFunds() internal virtual {
-        _wallet.transfer(msg.value);
     }
 }
