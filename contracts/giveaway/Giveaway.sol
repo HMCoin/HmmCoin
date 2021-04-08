@@ -2,11 +2,9 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/security/Pausable.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
 
 
-abstract contract Giveaway is ReentrancyGuard, AccessControl, Pausable { // TODO pausable + accesscontrol ?
+abstract contract Giveaway is ReentrancyGuard {
     event TokensGivenAway(
         address indexed beneficiary,
         uint256 amount
@@ -14,32 +12,20 @@ abstract contract Giveaway is ReentrancyGuard, AccessControl, Pausable { // TODO
 
     IERC20 public _token;
 
-    constructor(address owner, IERC20 token_) {
-        require(owner != address(0), "Giveaway: owner must be non-zero address");
-        require(address(token_) != address(0), "Giveaway: token must be non-zero address"); // TODO test
+    constructor(IERC20 token_) {
+        require(address(token_) != address(0), "Giveaway: token must be non-zero address");
 
-        _setupRole(DEFAULT_ADMIN_ROLE, owner);
         _token = token_;
     }
 
-    function pauseGiveaway() public {
-        require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "Giveaway: must have owner role to pause");
-        _pause();
-    }
-
-    function unpauseGiveaway() public {
-        require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "Giveaway: must have owner role to unpause");
-        _unpause();
-    }
-
-    function token() public view returns (IERC20) { // TODO test
+    function token() public view returns (IERC20) {
         return _token;
     }
 
     /**
      * @param beneficiary Recipient of the token purchase
      */
-    function getTokens(address beneficiary) public nonReentrant whenNotPaused {
+    function getTokens(address beneficiary) public nonReentrant {
         _preValidateRequest(beneficiary);
 
         // calculate token amount to be created
