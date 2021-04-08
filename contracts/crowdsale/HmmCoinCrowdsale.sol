@@ -2,33 +2,22 @@ pragma solidity ^0.8.0;
 
 import "./Crowdsale.sol";
 import "../token/HmmCoin.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
 
-contract HmmCoinCrowdsale is Crowdsale, AccessControl {
+contract HmmCoinCrowdsale is Crowdsale {
     uint256 private _cap;
 
     /**
     * @dev Constructor, takes maximum amount of wei accepted in the crowdsale.
     * @param cap_ Max amount of wei to be contributed
     */
-    constructor(uint256 rate, HmmCoin token, uint256 cap_, address owner) Crowdsale(rate, token) {
+    constructor(uint256 rate, HmmCoin token, uint256 cap_, address owner) Crowdsale(rate, token, owner) {
         require(cap_ > 0, "HmmCoinCrowdsale: cap must be > 0");
-        require(owner != address(0), "HmmCoinCrowdsale: owner must be non-zero address");
 
-        _setupRole(DEFAULT_ADMIN_ROLE, owner);
         _cap = cap_;
     }
 
     function cap() public view returns(uint256) {
         return _cap;
-    }
-
-    function forwardFunds(address payable recipient, uint256 amount) public {
-        require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "HmmCoinCrowdsale: must have owner role to withdraw");
-        require(amount > 0, "HmmCoinCrowdsale: amount must be > 0");
-        require(amount <= address(this).balance, "HmmCoinCrowdsale: amount must be <= current balance");
-
-        recipient.transfer(amount);
     }
 
     /**

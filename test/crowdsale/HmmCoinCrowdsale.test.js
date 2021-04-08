@@ -39,19 +39,6 @@ contract('HmmCoinCrowdsale', function (accounts) {
         expect(await this.crowdsale.rate()).to.be.bignumber.equal(rate);
     });
 
-    it('should store the wei raised', async function () {
-        expect(await this.crowdsale.weiRaised()).to.be.bignumber.equal(new BN(0));
-
-        await this.crowdsale.buyTokens(anotherAccount, { value: new BN(100), from: anotherAccount });
-        expect(await this.crowdsale.weiRaised()).to.be.bignumber.equal(new BN(100));
-
-        await this.crowdsale.buyTokens(anotherAccount, { value: new BN(42), from: anotherAccount });
-        expect(await this.crowdsale.weiRaised()).to.be.bignumber.equal(new BN(142));
-
-        await this.crowdsale.buyTokens(initialHolder, { value: new BN(58), from: initialHolder });
-        expect(await this.crowdsale.weiRaised()).to.be.bignumber.equal(new BN(200));
-    });
-
     it('requires a rate > 0', async function () {
         await expectRevert(
             HmmCoinCrowdsale.new(0, this.token.address, cap, initialHolder), 'Crowdsale: rate must be > 0',
@@ -66,7 +53,7 @@ contract('HmmCoinCrowdsale', function (accounts) {
 
     it('requires a non-zero owner address', async function () {
         await expectRevert(
-            HmmCoinCrowdsale.new(rate, this.token.address, cap, ZERO_ADDRESS), 'HmmCoinCrowdsale: owner must be non-zero address',
+            HmmCoinCrowdsale.new(rate, this.token.address, cap, ZERO_ADDRESS), 'Crowdsale: owner must be non-zero address',
         );
     });
 
@@ -75,7 +62,7 @@ contract('HmmCoinCrowdsale', function (accounts) {
             await this.crowdsale.buyTokens(anotherAccount, { value: 999, from: anotherAccount });
 
             await expectRevert(
-                this.crowdsale.forwardFunds(initialHolder, 1, { from: anotherAccount }), 'HmmCoinCrowdsale: must have owner role to withdraw',
+                this.crowdsale.forwardFunds(initialHolder, 1, { from: anotherAccount }), 'Crowdsale: must have owner role to withdraw',
             );
         });
 
@@ -83,7 +70,7 @@ contract('HmmCoinCrowdsale', function (accounts) {
             await this.crowdsale.buyTokens(anotherAccount, { value: 5000, from: anotherAccount });
 
             await expectRevert(
-                this.crowdsale.forwardFunds(recipient, 6000, { from: initialHolder }), 'HmmCoinCrowdsale: amount must be <= current balance',
+                this.crowdsale.forwardFunds(recipient, 6000, { from: initialHolder }), 'Crowdsale: amount must be <= current balance',
             );
         });
 
@@ -91,7 +78,7 @@ contract('HmmCoinCrowdsale', function (accounts) {
             await this.crowdsale.buyTokens(anotherAccount, { value: 5000, from: anotherAccount });
 
             await expectRevert(
-                this.crowdsale.forwardFunds(recipient, 0, { from: initialHolder }), 'HmmCoinCrowdsale: amount must be > 0',
+                this.crowdsale.forwardFunds(recipient, 0, { from: initialHolder }), 'Crowdsale: amount must be > 0',
             );
         });
 
@@ -144,6 +131,19 @@ contract('HmmCoinCrowdsale', function (accounts) {
             await this.crowdsale.buyTokens(anotherAccount, { value: valueWei, from: anotherAccount });
 
             expect(await web3.eth.getBalance(this.crowdsale.address)).to.be.bignumber.equal(new BN(valueWei));
+        });
+
+        it('should increase the wei raised', async function () {
+            expect(await this.crowdsale.weiRaised()).to.be.bignumber.equal(new BN(0));
+
+            await this.crowdsale.buyTokens(anotherAccount, { value: new BN(100), from: anotherAccount });
+            expect(await this.crowdsale.weiRaised()).to.be.bignumber.equal(new BN(100));
+
+            await this.crowdsale.buyTokens(anotherAccount, { value: new BN(42), from: anotherAccount });
+            expect(await this.crowdsale.weiRaised()).to.be.bignumber.equal(new BN(142));
+
+            await this.crowdsale.buyTokens(initialHolder, { value: new BN(58), from: initialHolder });
+            expect(await this.crowdsale.weiRaised()).to.be.bignumber.equal(new BN(200));
         });
 
         it('emits TokensPurchased event', async function () {

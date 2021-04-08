@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/Context.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
 
 /**
  * @title Crowdsale
@@ -15,10 +16,8 @@ import "@openzeppelin/contracts/utils/Context.sol";
  * The internal interface conforms the extensible and modifiable surface of crowdsales. Override
  * the methods to add functionality. Consider using 'super' where appropriate to concatenate
  * behavior.
- *
- * There is no withdrawal functionality implemented here. Deriving contract should implement it by itself.
  */
-abstract contract Crowdsale is ReentrancyGuard, Context {
+abstract contract Crowdsale is ReentrancyGuard, Context, AccessControl {
     // The token being sold
     IERC20 private _token;
 
@@ -52,10 +51,12 @@ abstract contract Crowdsale is ReentrancyGuard, Context {
      * with 3 decimals called TOK, 1 wei will give you 1 unit, or 0.001 TOK.
      * @param token_ Address of the token being sold
      */
-    constructor(uint256 rate_, IERC20 token_) {
+    constructor(uint256 rate_, IERC20 token_, address owner) {
         require(rate_ > 0, "Crowdsale: rate must be > 0");
         require(address(token_) != address(0), "Crowdsale: token must be non-zero address");
+        require(owner != address(0), "Crowdsale: owner must be non-zero address");
 
+        _setupRole(DEFAULT_ADMIN_ROLE, owner);
         _rate = rate_;
         _token = token_;
     }
@@ -127,9 +128,25 @@ abstract contract Crowdsale is ReentrancyGuard, Context {
         _postValidatePurchase(beneficiary, weiAmount);
     }
 
+    function forwardFunds(address payable recipient, uint256 amount) public {
+        require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "Crowdsale: must have owner role to withdraw");
+
+        _forwardFunds(recipient, amount);
+    }
+
     // -----------------------------------------
     // Internal interface (extensible)
     // -----------------------------------------
+
+    /**
+    * @dev Executed to withdraw ether from crowdsale
+    */
+    function _forwardFunds(address payable recipient, uint256 amount) internal virtual {
+        require(amount > 0, "Crowdsale: amount must be > 0");
+        require(amount <= address(this).balance, "Crowdsale: amount must be <= current balance");
+
+        recipient.transfer(amount);
+    }
 
     /**
      * @dev Validation of an incoming purchase. Use require statements to revert state when conditions are not met. Use `super` in contracts that inherit from Crowdsale to extend their validations.
