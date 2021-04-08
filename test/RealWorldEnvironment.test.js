@@ -2,45 +2,51 @@ const { BN, constants, expectEvent, expectRevert } = require('@openzeppelin/test
 const { ZERO_ADDRESS } = constants;
 const { expect } = require('chai');
 
-const HmmCoinGiveawayHelper = artifacts.require('HmmCoinGiveawayHelper');
+const HmmCoinBatchSender = artifacts.require('HmmCoinBatchSender');
 const HmmCoinCrowdsale = artifacts.require('HmmCoinCrowdsale');
 const HmmCoin = artifacts.require('HmmCoin');
+const HmmCoinGiveaway = artifacts.require('HmmCoinGiveaway');
 
 contract('RealWorldEnvironment', function (accounts) {
     const [ initialHolder, recipient, anotherAccount ] = accounts;
 
     const name = 'HmmCoin';
-    const symbol = 'hmm';
+    const symbol = 'HMC';
 
-    const decimals = 18;
-    const initialSupply = new BN(1101101).mul(new BN(10).pow(new BN(18)));
-    const maxSupply = new BN(101101101).mul(new BN(10).pow(new BN(18)));
+    const decimals = new BN(18);
+    const decimalsMult = new BN(10).pow(decimals);
+    const initialSupply = new BN(1101101).mul(decimalsMult);
+    const maxSupply = new BN(101101101).mul(decimalsMult);
 
     const MINTER_ROLE = web3.utils.soliditySha3('MINTER_ROLE');
 
-    const giveawayAmount = new BN(142);
+    const freeGiveawayAmount = new BN(5).mul(decimalsMult);
 
-    const rate = new BN(3);
-    const cap = new BN(10000);
+    const exchangeRate = new BN(3);
+    const crowdsaleCap = new BN(20000000).mul(decimalsMult);
 
     beforeEach(async function () {
         // the thing is to have the real world migrations here
-        // TODO real params
         this.token = await HmmCoin.new(name, symbol, initialHolder, initialSupply, maxSupply);
-        this.giveawayHelper = await HmmCoinGiveawayHelper.new(giveawayAmount, this.token.address, initialHolder);
-        await this.token.grantRole(MINTER_ROLE, this.giveawayHelper.address);
-        this.crowdsale = await HmmCoinCrowdsale.new(rate, this.token.address, cap, initialHolder);
+
+        this.batchSender = await HmmCoinBatchSender.new(freeGiveawayAmount, this.token.address, initialHolder);
+        await this.token.grantRole(MINTER_ROLE, this.batchSender.address);
+
+        this.crowdsale = await HmmCoinCrowdsale.new(exchangeRate, this.token.address, crowdsaleCap, initialHolder);
         await this.token.grantRole(MINTER_ROLE, this.crowdsale.address);
+
+        this.giveaway = await HmmCoinGiveaway.new(this.token.address);
+        await this.token.grantRole(MINTER_ROLE, this.giveaway.address);
     });
 
-    describe('HmmCoinGiveawayHelper', function () {
+    describe('HmmCoinBatchSender', function () {
         describe('sendBatch', function () {
             it('delivers the tokens', async function () {
-                await this.giveawayHelper.sendBatch([anotherAccount, recipient, initialHolder], { from: initialHolder });
+                await this.batchSender.sendBatch([anotherAccount, recipient, initialHolder], { from: initialHolder });
 
-                expect(await this.token.balanceOf(anotherAccount)).to.be.bignumber.equal(giveawayAmount);
-                expect(await this.token.balanceOf(recipient)).to.be.bignumber.equal(giveawayAmount);
-                expect(await this.token.balanceOf(initialHolder)).to.be.bignumber.equal(giveawayAmount.add(initialSupply));
+                expect(await this.token.balanceOf(anotherAccount)).to.be.bignumber.equal(freeGiveawayAmount);
+                expect(await this.token.balanceOf(recipient)).to.be.bignumber.equal(freeGiveawayAmount);
+                expect(await this.token.balanceOf(initialHolder)).to.be.bignumber.equal(freeGiveawayAmount.add(initialSupply));
             });
         });
     });
@@ -48,10 +54,10 @@ contract('RealWorldEnvironment', function (accounts) {
     describe('HmmCoinCrowdsale', function () {
         describe('buyTokens', function () {
             it('delivers the tokens', async function () {
-                const valueWei = new BN(10);
-                const amountBought = valueWei.mul(rate);
+                const valueWei = new BN(10).pow(decimals); // 1 ether
+                const amountBought = valueWei.mul(exchangeRate);
 
-                await this.crowdsale.buyTokens(anotherAccount, { value: valueWei, from: initialHolder });
+                await this.crowdsale.buyTokens(anotherAccount, { value: valueWei, from: recipient });
 
                 expect(await this.token.balanceOf(anotherAccount)).to.be.bignumber.equal(amountBought);
             });
@@ -60,18 +66,18 @@ contract('RealWorldEnvironment', function (accounts) {
 
     describe('HmmCoin', function () {
         it('fails when mint callee is not owner', async function () {
-            await expectRevert(this.token.mint(anotherAccount, 9999, { from: anotherAccount }), 'HmmCoin: must have minter role to mint');
+            await expectRevert(this.token.mint(anotherAccount, 9999, { from: recipient }), 'HmmCoin: must have minter role to mint');
         });
+    });
 
-        // describe('TokenGiveaway', function () {
-        //     describe('getTokens', function () {
-        //         it('delivers the tokens', async function () {
-        //             const amountExpected = new BN(42);
-        //             await this.token.getTokens(anotherAccount);
-        //
-        //             expect(await this.token.balanceOf(anotherAccount)).to.be.bignumber.equal(amountExpected);
-        //         });
-        //     });
-        // }); // TODO
+    describe('HmmCoinGiveaway', function () {
+        describe('getTokens', function () {
+            it('delivers the tokens', async function () {
+                const amountExpected = new BN(10).pow(decimals); // 1 HMC
+                await this.giveaway.getTokens(anotherAccount);
+
+                expect(await this.token.balanceOf(anotherAccount)).to.be.bignumber.equal(amountExpected);
+            });
+        });
     });
 });

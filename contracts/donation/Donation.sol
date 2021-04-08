@@ -39,7 +39,7 @@ contract Donation is AccessControl {
         recipient.transfer(amount);
     }
 
-    function kill() external { // TODO move to Killable.sol?
+    function kill() external {
         require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "Donation: must have owner role to destruct contract");
 
         emit ContractDestroyed(payable(this));

@@ -177,6 +177,8 @@ contract('HmmCoinCrowdsale', function (accounts) {
             expect(await this.token.balanceOf(anotherAccount)).to.be.bignumber.equal(prevBalance.add(amountBought));
         });
 
+        // TODO test _getTokenAmount
+
         it('fails when beneficiary is zero address', async function () {
             const valueWei = new BN(10);
 
@@ -189,5 +191,4 @@ contract('HmmCoinCrowdsale', function (accounts) {
             await expectRevert(this.crowdsale.buyTokens(recipient, { value: valueWei, from: initialHolder }), 'Crowdsale: wei amount is zero');
         });
     });
-    // TODO test _getTokenAmount
 });
