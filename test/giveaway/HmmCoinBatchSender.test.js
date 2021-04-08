@@ -1,4 +1,4 @@
-const { BN, constants, expectEvent, expectRevert } = require('@openzeppelin/test-helpers');
+const { BN, constants, expectRevert } = require('@openzeppelin/test-helpers');
 const { ZERO_ADDRESS } = constants;
 const { expect } = require('chai');
 
@@ -13,12 +13,14 @@ contract('HmmCoinBatchSender', function (accounts) {
     const name = 'HmmCoin';
     const symbol = 'hmm';
 
-    const initialSupply = new BN(0);
-    const maxSupply = new BN(10000000);
+    const decimals = new BN(18);
+    const decimalsMult = new BN(10).pow(decimals);
+    const initialSupply = new BN(1101101).mul(decimalsMult);
+    const maxSupply = new BN(101101101).mul(decimalsMult);
 
     const MINTER_ROLE = web3.utils.soliditySha3('MINTER_ROLE');
 
-    const giveawayAmount = new BN(142);
+    const giveawayAmount = new BN(142).mul(decimalsMult);
 
     beforeEach(async function () {
         this.token = await HmmCoin.new(name, symbol, initialHolder, initialSupply, maxSupply);
@@ -84,7 +86,7 @@ contract('HmmCoinBatchSender', function (accounts) {
 
             expect(await this.token.balanceOf(anotherAccount)).to.be.bignumber.equal(giveawayAmount);
             expect(await this.token.balanceOf(recipient)).to.be.bignumber.equal(giveawayAmount);
-            expect(await this.token.balanceOf(initialHolder)).to.be.bignumber.equal(giveawayAmount);
+            expect(await this.token.balanceOf(initialHolder)).to.be.bignumber.equal(giveawayAmount.add(initialSupply));
         });
     });
 });

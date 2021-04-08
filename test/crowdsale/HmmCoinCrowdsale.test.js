@@ -13,8 +13,10 @@ contract('HmmCoinCrowdsale', function (accounts) {
     const name = 'HmmCoin';
     const symbol = 'hmm';
 
-    const initialSupply = new BN(0);
-    const maxSupply = new BN(10000000);
+    const decimals = new BN(18);
+    const decimalsMult = new BN(10).pow(decimals);
+    const initialSupply = new BN(1101101).mul(decimalsMult);
+    const maxSupply = new BN(101101101).mul(decimalsMult);
 
     const MINTER_ROLE = web3.utils.soliditySha3('MINTER_ROLE');
 
@@ -35,7 +37,6 @@ contract('HmmCoinCrowdsale', function (accounts) {
     });
 
     it('should store the exchange rate', async function () {
-        let a = await this.crowdsale.rate();
         expect(await this.crowdsale.rate()).to.be.bignumber.equal(rate);
     });
 
@@ -126,7 +127,7 @@ contract('HmmCoinCrowdsale', function (accounts) {
     });
 
     describe('buyTokens', function () {
-        it('stores funds', async function () {
+        it('should store funds', async function () {
             const valueWei = new BN(5000);
             await this.crowdsale.buyTokens(anotherAccount, { value: valueWei, from: anotherAccount });
 

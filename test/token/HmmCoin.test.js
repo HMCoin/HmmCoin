@@ -20,8 +20,10 @@ contract('HmmCoin', function (accounts) {
     const name = 'HmmCoin';
     const symbol = 'hmm';
 
-    const initialSupply = new BN(100);
-    const maxSupply = new BN(10000000);
+    const decimals = new BN(18);
+    const decimalsMult = new BN(10).pow(decimals);
+    const initialSupply = new BN(1101101).mul(decimalsMult);
+    const maxSupply = new BN(101101101).mul(decimalsMult);
 
     const DEFAULT_ADMIN_ROLE = '0x0000000000000000000000000000000000000000000000000000000000000000';
     const MINTER_ROLE = web3.utils.soliditySha3('MINTER_ROLE');
