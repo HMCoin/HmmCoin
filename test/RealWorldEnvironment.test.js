@@ -12,8 +12,9 @@ contract('RealWorldEnvironment', function (accounts) {
     const name = 'HmmCoin';
     const symbol = 'hmm';
 
-    const initialSupply = new BN(5000);
-    const maxSupply = new BN(10000000);
+    const decimals = 18;
+    const initialSupply = new BN(1101101).mul(new BN(10).pow(new BN(18)));
+    const maxSupply = new BN(101101101).mul(new BN(10).pow(new BN(18)));
 
     const MINTER_ROLE = web3.utils.soliditySha3('MINTER_ROLE');
 
@@ -62,26 +63,15 @@ contract('RealWorldEnvironment', function (accounts) {
             await expectRevert(this.token.mint(anotherAccount, 9999, { from: anotherAccount }), 'HmmCoin: must have minter role to mint');
         });
 
-        describe('TokenGiveaway', function () {
-            describe('getTokens', function () {
-                it('delivers the tokens', async function () {
-                    const amountExpected = new BN(42);
-                    await this.token.getTokens(anotherAccount);
-
-                    expect(await this.token.balanceOf(anotherAccount)).to.be.bignumber.equal(amountExpected);
-                });
-            });
-
-            it('allows unpausing', async function () {
-                await this.token.pauseGiveaway({ from: initialHolder });
-                await expectRevert(this.token.getTokens(recipient), 'Pausable: paused');
-                await this.token.unpauseGiveaway({ from: initialHolder });
-
-                const amountExpected = new BN(42);
-                await this.token.getTokens(recipient);
-
-                expect(await this.token.balanceOf(recipient)).to.be.bignumber.equal(amountExpected);
-            });
-        });
+        // describe('TokenGiveaway', function () {
+        //     describe('getTokens', function () {
+        //         it('delivers the tokens', async function () {
+        //             const amountExpected = new BN(42);
+        //             await this.token.getTokens(anotherAccount);
+        //
+        //             expect(await this.token.balanceOf(anotherAccount)).to.be.bignumber.equal(amountExpected);
+        //         });
+        //     });
+        // }); // TODO
     });
 });

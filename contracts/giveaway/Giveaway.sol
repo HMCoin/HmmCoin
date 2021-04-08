@@ -1,32 +1,39 @@
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 
-/**
- * @dev Extension of {ERC20} that adds ability to request tokens.
- */
-abstract contract TokenGiveaway is ERC20, ReentrancyGuard, Pausable, AccessControl {
-    constructor(address owner) {
-        require(owner != address(0), "TokenGiveaway: owner must be non-zero address");
-        _setupRole(DEFAULT_ADMIN_ROLE, owner);
-    }
 
+abstract contract Giveaway is ReentrancyGuard, AccessControl, Pausable { // TODO pausable + accesscontrol ?
     event TokensGivenAway(
         address indexed beneficiary,
         uint256 amount
     );
 
+    IERC20 public _token;
+
+    constructor(address owner, IERC20 token_) {
+        require(owner != address(0), "Giveaway: owner must be non-zero address");
+        require(address(token_) != address(0), "Giveaway: token must be non-zero address"); // TODO test
+
+        _setupRole(DEFAULT_ADMIN_ROLE, owner);
+        _token = token_;
+    }
+
     function pauseGiveaway() public {
-        require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "TokenGiveaway: must have owner role to pause");
+        require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "Giveaway: must have owner role to pause");
         _pause();
     }
 
     function unpauseGiveaway() public {
-        require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "TokenGiveaway: must have owner role to unpause");
+        require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "Giveaway: must have owner role to unpause");
         _unpause();
+    }
+
+    function token() public view returns (IERC20) { // TODO test
+        return _token;
     }
 
     /**
@@ -71,7 +78,7 @@ abstract contract TokenGiveaway is ERC20, ReentrancyGuard, Pausable, AccessContr
      * @param tokenAmount Number of tokens to be emitted
      */
     function _deliverTokens(address beneficiary, uint256 tokenAmount) internal virtual {
-        transfer(beneficiary, tokenAmount);
+        _token.transfer(beneficiary, tokenAmount);
     }
 
     /**

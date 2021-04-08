@@ -3,16 +3,15 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Capped.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
-import "./TokenGiveaway.sol";
 
-contract HmmCoin is ERC20Capped, ERC20Burnable, TokenGiveaway { // TODO upgradable
+contract HmmCoin is ERC20Capped, ERC20Burnable, AccessControl {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
     // @param initialSupply_ Initial supply of the contract that will be minted into owner's account
     // @param maxSupply_ Maximum possible tokens cap
     // @param owner Will be set as DEFAULT_ADMIN_ROLE, MINTER_ROLE and have the _initialSupply tokens
     constructor(string memory name_, string memory symbol_, address owner, uint256 initialSupply_, uint256 maxSupply_)
-    ERC20(name_, symbol_) ERC20Capped(maxSupply_) TokenGiveaway(owner) {
+    ERC20(name_, symbol_) ERC20Capped(maxSupply_) {
         require(initialSupply_ <= maxSupply_, "HmmCoin: initial supply must be lower or equal max supply");
         require(owner != address(0), "HmmCoin: owner must be non-zero address");
 
@@ -36,19 +35,7 @@ contract HmmCoin is ERC20Capped, ERC20Burnable, TokenGiveaway { // TODO upgradab
         _mint(to, amount);
     }
 
-    // internal functions
-
     function _mint(address account, uint256 amount) internal virtual override(ERC20, ERC20Capped) {
         ERC20Capped._mint(account, amount);
-    }
-
-    // giveaway mechanism
-    function _deliverTokens(address beneficiary, uint256 tokenAmount) internal override {
-        _mint(beneficiary, tokenAmount);
-    }
-
-    // giveaway mechanism
-    function _getTokenAmount() internal override view returns (uint256) {
-        return 42; // TODO
     }
 }

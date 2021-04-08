@@ -51,7 +51,7 @@ contract('HmmCoin', function (accounts) {
 
     it('requires a non-zero owner address', async function () {
         await expectRevert(
-            HmmCoin.new(name, symbol, ZERO_ADDRESS, initialSupply, maxSupply), 'TokenGiveaway: owner must be non-zero address',
+            HmmCoin.new(name, symbol, ZERO_ADDRESS, initialSupply, maxSupply), 'HmmCoin: owner must be non-zero address',
         );
     });
 
@@ -67,77 +67,6 @@ contract('HmmCoin', function (accounts) {
 
     it('initialHolder has the minter role', async function () {
         expect(await this.token.hasRole(MINTER_ROLE, initialHolder)).to.equal(true);
-    });
-
-    describe('TokenGiveaway', function () {
-        describe('pausable', function () {
-            it('emits Paused event', async function () {
-                const receipt = await this.token.pauseGiveaway({ from: initialHolder });
-
-                expectEvent(receipt, 'Paused', { account: initialHolder });
-            });
-
-            it('emits Unpaused event', async function () {
-                await this.token.pauseGiveaway({ from: initialHolder });
-                const receipt = await this.token.unpauseGiveaway({ from: initialHolder });
-
-                expectEvent(receipt, 'Unpaused', { account: initialHolder });
-            });
-
-            it('fails when pause callee is not owner', async function () {
-                await expectRevert(this.token.pauseGiveaway({ from: anotherAccount }), 'TokenGiveaway: must have owner role to pause');
-            });
-
-            it('fails when unpause callee is not owner', async function () {
-                await this.token.pauseGiveaway({ from: initialHolder });
-                await expectRevert(this.token.unpauseGiveaway({ from: anotherAccount }), 'TokenGiveaway: must have owner role to unpause');
-            });
-        });
-
-        describe('getTokens', function () {
-            it('emits TokensGivenAway event', async function () {
-                const amountExpected = new BN(42);
-                const receipt = await this.token.getTokens(anotherAccount);
-
-                expectEvent(receipt, 'TokensGivenAway', { beneficiary: anotherAccount, amount: amountExpected });
-            });
-
-            it('mints the tokens', async function () {
-                const amountExpected = new BN(42);
-                const receipt = await this.token.getTokens(anotherAccount);
-
-                expectEvent(receipt, 'Transfer', { from: ZERO_ADDRESS, to: anotherAccount, value: amountExpected });
-            });
-
-            it('delivers the tokens', async function () {
-                const amountExpected = new BN(42);
-                await this.token.getTokens(anotherAccount);
-
-                expect(await this.token.balanceOf(anotherAccount)).to.be.bignumber.equal(amountExpected);
-            });
-
-            it('fails when beneficiary is zero address', async function () {
-                await expectRevert(this.token.getTokens(ZERO_ADDRESS), 'TokenGiveaway: beneficiary must be non-zero address');
-            });
-
-            it('fails when paused', async function () {
-                await this.token.pauseGiveaway({ from: initialHolder });
-                await expectRevert(this.token.getTokens(recipient), 'Pausable: paused');
-            });
-
-            it('allows unpausing', async function () {
-                await this.token.pauseGiveaway({ from: initialHolder });
-                await expectRevert(this.token.getTokens(recipient), 'Pausable: paused');
-                await this.token.unpauseGiveaway({ from: initialHolder });
-
-                const amountExpected = new BN(42);
-                await this.token.getTokens(recipient);
-
-                expect(await this.token.balanceOf(recipient)).to.be.bignumber.equal(amountExpected);
-            });
-
-            // TODO test _getTokenAmount
-        });
     });
 
     shouldBehaveLikeAccessControl('AccessControl', initialHolder, anotherAccount, recipient, initialHolder);
