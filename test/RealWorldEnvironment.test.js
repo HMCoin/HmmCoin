@@ -21,6 +21,7 @@ contract('RealWorldEnvironment', function (accounts) {
     const MINTER_ROLE = web3.utils.soliditySha3('MINTER_ROLE');
 
     const freeGiveawayAmount = new BN(5).mul(decimalsMult);
+    const giveawayTimePeriodLen = new BN(24).muln(60).muln(60); // 24h
 
     const exchangeRate = new BN(3);
     const crowdsaleCap = new BN(20000000).mul(decimalsMult);
@@ -35,9 +36,11 @@ contract('RealWorldEnvironment', function (accounts) {
         this.crowdsale = await HmmCoinCrowdsale.new(exchangeRate, this.token.address, crowdsaleCap, initialHolder);
         await this.token.grantRole(MINTER_ROLE, this.crowdsale.address);
 
-        this.giveaway = await HmmCoinGiveaway.new(this.token.address);
+        this.giveaway = await HmmCoinGiveaway.new(this.token.address, giveawayTimePeriodLen);
         await this.token.grantRole(MINTER_ROLE, this.giveaway.address);
     });
+
+    // crucial, end-user functionalities
 
     describe('HmmCoinBatchSender', function () {
         describe('sendBatch', function () {
@@ -47,6 +50,10 @@ contract('RealWorldEnvironment', function (accounts) {
                 expect(await this.token.balanceOf(anotherAccount)).to.be.bignumber.equal(freeGiveawayAmount);
                 expect(await this.token.balanceOf(recipient)).to.be.bignumber.equal(freeGiveawayAmount);
                 expect(await this.token.balanceOf(initialHolder)).to.be.bignumber.equal(freeGiveawayAmount.add(initialSupply));
+            });
+
+            it('fails when callee is not owner', async function () {
+                await expectRevert(this.batchSender.sendBatch([anotherAccount], { from: recipient }), 'HmmCoinBatchSender: must have owner role to execute giveaway');
             });
         });
     });
@@ -77,6 +84,11 @@ contract('RealWorldEnvironment', function (accounts) {
                 await this.giveaway.getTokens(anotherAccount);
 
                 expect(await this.token.balanceOf(anotherAccount)).to.be.bignumber.equal(amountExpected);
+            });
+
+            it('fails when trying to request second time', async function () {
+                await this.giveaway.getTokens(anotherAccount);
+                await expectRevert(this.giveaway.getTokens(anotherAccount), "HmmCoinGiveaway: address already requested within the time period");
             });
         });
     });

@@ -10,7 +10,7 @@ abstract contract Giveaway is ReentrancyGuard {
         uint256 amount
     );
 
-    IERC20 public _token;
+    IERC20 private _token;
 
     constructor(IERC20 token_) {
         require(address(token_) != address(0), "Giveaway: token must be non-zero address");
@@ -45,7 +45,7 @@ abstract contract Giveaway is ReentrancyGuard {
      * @dev Validation of an incoming request. Use require statements to revert state when conditions are not met. Use `super` in contracts that inherit from TokenGiveaway to extend their validations.
      * @param beneficiary Address performing the token purchase
      */
-    function _preValidateRequest(address beneficiary) internal virtual view {
+    function _preValidateRequest(address beneficiary) internal virtual {
         require(beneficiary != address(0), "TokenGiveaway: beneficiary must be non-zero address");
     }
 

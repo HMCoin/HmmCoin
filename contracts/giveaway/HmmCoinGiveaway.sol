@@ -5,12 +5,20 @@ import "../token/HmmCoin.sol";
 
 contract HmmCoinGiveaway is Giveaway {
     uint256 public tokensGivenAway;
-    uint256 private _decimals;
+    uint256 public nextResetTime;
 
-    constructor(HmmCoin token_) Giveaway(token_) {
-        tokensGivenAway = 0;
+    uint256 private _decimals;
+    mapping (address => bool) private _lastRequestsMap;
+    address[] private _lastRequests;
+    uint256 private _timePeriodLenSecs;
+
+    constructor(HmmCoin token_, uint256 timePeriodLenSecs_) Giveaway(token_) {
+        require(timePeriodLenSecs_ > 0, "HmmCoinGiveaway: timePeriodLenSecs must be > 0");
         _decimals = token_.decimals();
-        require(_decimals > 6);
+        require(_decimals > 6, "HmmCoinGiveaway: token not supported");
+        tokensGivenAway = 0;
+        _timePeriodLenSecs = timePeriodLenSecs_;
+        nextResetTime = block.timestamp + timePeriodLenSecs_;
     }
 
     function _deliverTokens(address beneficiary, uint256 tokenAmount) internal override {
@@ -29,7 +37,33 @@ contract HmmCoinGiveaway is Giveaway {
         return rewards[level] * (10 ** decimalsLeft);
     }
 
+    function _preValidateRequest(address beneficiary) internal override {
+        super._preValidateRequest(beneficiary);
+
+        if (block.timestamp >= nextResetTime) {
+            _resetLastRequests();
+        }
+
+        require(_lastRequestsMap[beneficiary] == false, "HmmCoinGiveaway: address already requested within the time period");
+    }
+
+    function _ceilDiv(uint256 a, uint256 m) internal pure returns (uint256) {
+        return (a + m - 1) / m;
+    }
+
+    function _resetLastRequests() internal {
+        nextResetTime = nextResetTime + (_ceilDiv(block.timestamp - nextResetTime, _timePeriodLenSecs) * _timePeriodLenSecs);
+
+        for (uint256 i = 0; i < _lastRequests.length; i++) {
+            _lastRequestsMap[_lastRequests[i]] = false;
+        }
+
+        delete _lastRequests;
+    }
+
     function _updatePurchasingState(address beneficiary, uint256 tokenAmount) internal override {
         tokensGivenAway = tokensGivenAway + tokenAmount;
+        _lastRequestsMap[beneficiary] = true;
+        _lastRequests.push(beneficiary);
     }
 }

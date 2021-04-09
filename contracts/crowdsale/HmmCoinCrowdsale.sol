@@ -12,7 +12,6 @@ contract HmmCoinCrowdsale is Crowdsale {
     */
     constructor(uint256 rate, HmmCoin token, uint256 cap_, address owner) Crowdsale(rate, token, owner) {
         require(cap_ > 0, "HmmCoinCrowdsale: cap must be > 0");
-
         _cap = cap_;
     }
 
