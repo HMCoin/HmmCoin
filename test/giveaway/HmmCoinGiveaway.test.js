@@ -9,7 +9,7 @@ contract('HmmCoinGiveaway', function (accounts) {
     const [initialHolder, recipient, anotherAccount] = accounts;
 
     const name = 'HmmCoin';
-    const symbol = 'hmm';
+    const symbol = 'HMC';
 
     const decimals = new BN(18);
     const decimalsMult = new BN(10).pow(decimals);
