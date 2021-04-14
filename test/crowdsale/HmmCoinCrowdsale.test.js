@@ -96,7 +96,7 @@ contract('HmmCoinCrowdsale', function (accounts) {
     describe('cappedCrowdsale', function () {
         it('requires a cap > 0', async function () {
             await expectRevert(
-                HmmCoinCrowdsale.new(rate, this.token.address, 0, initialHolder), 'HmmCoinCrowdsale: cap must be > 0',
+                HmmCoinCrowdsale.new(rate, this.token.address, 0, initialHolder), 'CappedCrowdsale: cap must be > 0',
             );
         });
 
@@ -117,12 +117,39 @@ contract('HmmCoinCrowdsale', function (accounts) {
             const valueWei = cap.subn(1);
 
             await this.crowdsale.buyTokens(anotherAccount, { value: valueWei, from: anotherAccount });
-            await expectRevert(this.crowdsale.buyTokens(anotherAccount, { value: 2, from: anotherAccount }), 'HmmCoinCrowdsale: cap exceeded');
+            await expectRevert(this.crowdsale.buyTokens(anotherAccount, { value: 2, from: anotherAccount }), 'CappedCrowdsale: cap exceeded');
+        });
+
+        it('fails to sell more than cap', async function () {
+            const valueWei = cap.addn(1);
+
+            await expectRevert(this.crowdsale.buyTokens(anotherAccount, { value: valueWei, from: anotherAccount }), 'CappedCrowdsale: cap exceeded');
         });
 
         it('fails to sell after cap is reached', async function () {
             await this.crowdsale.buyTokens(anotherAccount, { value: cap, from: anotherAccount });
-            await expectRevert(this.crowdsale.buyTokens(anotherAccount, { value: 1, from: anotherAccount }), 'HmmCoinCrowdsale: cap exceeded');
+            await expectRevert(this.crowdsale.buyTokens(anotherAccount, { value: 1, from: anotherAccount }), 'CappedCrowdsale: cap exceeded');
+        });
+
+        it('should not reach cap if sent under cap', async function () {
+            let capReached = await this.crowdsale.capReached();
+            expect(capReached).to.equal(false);
+
+            await this.crowdsale.buyTokens(anotherAccount, { value: cap.divn(2) });
+            capReached = await this.crowdsale.capReached();
+            expect(capReached).to.equal(false);
+        });
+
+        it('should not reach cap if sent just under cap', async function () {
+            await this.crowdsale.buyTokens(anotherAccount, { value: cap.subn(1) });
+            let capReached = await this.crowdsale.capReached();
+            expect(capReached).to.equal(false);
+        });
+
+        it('should reach cap if cap sent', async function () {
+            await this.crowdsale.buyTokens(anotherAccount, { value: cap });
+            let capReached = await this.crowdsale.capReached();
+            expect(capReached).to.equal(true);
         });
     });
 

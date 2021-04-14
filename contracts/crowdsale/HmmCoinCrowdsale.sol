@@ -1,22 +1,15 @@
 pragma solidity ^0.8.0;
 
-import "./Crowdsale.sol";
 import "../token/HmmCoin.sol";
+import "./CappedCrowdsale.sol";
 
-contract HmmCoinCrowdsale is Crowdsale {
-    uint256 private _cap;
-
+contract HmmCoinCrowdsale is CappedCrowdsale {
     /**
     * @dev Constructor, takes maximum amount of wei accepted in the crowdsale.
     * @param cap_ Max amount of wei to be contributed
     */
-    constructor(uint256 rate, HmmCoin token, uint256 cap_, address owner) Crowdsale(rate, token, owner) {
-        require(cap_ > 0, "HmmCoinCrowdsale: cap must be > 0");
-        _cap = cap_;
-    }
+    constructor(uint256 rate, HmmCoin token, uint256 cap_, address owner) CappedCrowdsale(cap_) Crowdsale(rate, token, owner) {
 
-    function cap() public view returns(uint256) {
-        return _cap;
     }
 
     /**
@@ -26,16 +19,6 @@ contract HmmCoinCrowdsale is Crowdsale {
      */
     function _deliverTokens(address beneficiary, uint256 tokenAmount) internal override {
         HmmCoin(address(token())).mint(beneficiary, tokenAmount);
-    }
-
-    /**
-    * @dev Extend parent behavior requiring purchase to respect the funding cap.
-    * @param _beneficiary Token purchaser
-    * @param _weiAmount Amount of wei contributed
-    */
-    function _preValidatePurchase(address _beneficiary, uint256 _weiAmount) internal view override {
-        super._preValidatePurchase(_beneficiary, _weiAmount);
-        require(weiRaised() + _weiAmount <= _cap, "HmmCoinCrowdsale: cap exceeded");
     }
 
     /**
