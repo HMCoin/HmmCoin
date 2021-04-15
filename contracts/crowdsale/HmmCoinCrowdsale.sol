@@ -8,9 +8,8 @@ contract HmmCoinCrowdsale is CappedCrowdsale {
     * @dev Constructor, takes maximum amount of wei accepted in the crowdsale.
     * @param cap_ Max amount of wei to be contributed
     */
-    constructor(uint256 rate, HmmCoin token, uint256 cap_, address owner) CappedCrowdsale(cap_) Crowdsale(rate, token, owner) {
-
-    }
+    constructor(uint256 rate, HmmCoin token, uint256 cap_, address owner)
+    CappedCrowdsale(cap_) Crowdsale(rate, token, owner) { }
 
     /**
      * @dev Overrides delivery by minting tokens upon purchase.

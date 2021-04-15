@@ -1,5 +1,4 @@
-const { BN, constants, expectEvent, expectRevert } = require('@openzeppelin/test-helpers');
-const { ZERO_ADDRESS } = constants;
+const { BN, expectRevert } = require('@openzeppelin/test-helpers');
 const { expect } = require('chai');
 
 const HmmCoinBatchSender = artifacts.require('HmmCoinBatchSender');
