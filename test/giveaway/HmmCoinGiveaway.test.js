@@ -206,7 +206,7 @@ async function forwardTime(deltaSecs) {
     let currentBlock = await web3.eth.getBlock('latest');
     let time = Number(currentBlock.timestamp) + deltaSecs;
 
-    return new Promise((r, rej) => {
+    return new Promise((resolve, reject) => {
         web3.currentProvider.send(
             {
                 jsonrpc: "2.0",
@@ -214,9 +214,8 @@ async function forwardTime(deltaSecs) {
                 params: [time],
                 id: new Date().getTime(),
             },
-            (err, _) => {
-                const hash = web3.eth.getBlock("latest").hash;
-                return (err ? rej(err) : r(hash));
+            (err, res) => {
+                err ? reject(err) : resolve(res);
             }
         );
     });
