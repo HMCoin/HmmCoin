@@ -20,7 +20,10 @@ contract('HmmCoinGiveaway', function (accounts) {
     const giveawayTimePeriodLen = new BN(24).muln(60).muln(60); // 24h
 
     const firstLevelAmountExpected = new BN(10).pow(decimals); // 1 HMC
-    const secondLevelAmountExpected = new BN(10).pow(decimals.subn(1)).muln(9); // 0.9 HMC
+    const secondLevelAmountExpected = new BN(10).pow(decimals.subn(2)).muln(93); // 0.93 HMC
+    const thirdLevelAmountExpected = new BN(10).pow(decimals.subn(4)).muln(8649); // 0.8649 HMC
+    const level42AmountExpected = new BN(10).pow(decimals.subn(6)).muln(51027); // 0.051027 HMC
+    const level77AmountExpected = new BN(10).pow(decimals.subn(6)).muln(4024); // 0.004024 HMC
 
     beforeEach(async function () {
         this.token = await HmmCoin.new(name, symbol, initialHolder, initialSupply, maxSupply);
@@ -106,8 +109,7 @@ contract('HmmCoinGiveaway', function (accounts) {
             expect(await this.token.balanceOf(recipient)).to.be.bignumber.equal(secondLevelAmountExpected);
         });
 
-        it('gives 0.81 token for third 1 000 000 coins given away', async function () {
-            const thirdLevelAmountExpected = new BN(10).pow(decimals.subn(2)).muln(81); // 0.81 HMC
+        it('gives 0.8649 token for third 1 000 000 coins given away', async function () {
             await this.giveaway.setTokensGivenAway(new BN(2000000).mul(decimalsMult));
 
             await this.giveaway.getTokens(anotherAccount);
@@ -117,8 +119,7 @@ contract('HmmCoinGiveaway', function (accounts) {
             expect(await this.token.balanceOf(recipient)).to.be.bignumber.equal(thirdLevelAmountExpected);
         });
 
-        it('gives 0.013302 token for in level 42', async function () {
-            const level42AmountExpected = new BN(10).pow(decimals.subn(6)).muln(13302); // 0.013302 HMC
+        it('gives 0.051027 token for in level 42', async function () {
             await this.giveaway.setTokensGivenAway(new BN(41000000).mul(decimalsMult));
 
             await this.giveaway.getTokens(anotherAccount);
@@ -128,15 +129,14 @@ contract('HmmCoinGiveaway', function (accounts) {
             expect(await this.token.balanceOf(recipient)).to.be.bignumber.equal(level42AmountExpected);
         });
 
-        it('gives 0.000242 token for in level 80', async function () {
-            const level80AmountExpected = new BN(10).pow(decimals.subn(6)).muln(242); // 0.000242 HMC
-            await this.giveaway.setTokensGivenAway(new BN(79555555).mul(decimalsMult));
+        it('gives 0.004024 token for in level 77', async function () {
+            await this.giveaway.setTokensGivenAway(new BN(76555555).mul(decimalsMult));
 
             await this.giveaway.getTokens(anotherAccount);
             await this.giveaway.getTokens(recipient);
 
-            expect(await this.token.balanceOf(anotherAccount)).to.be.bignumber.equal(level80AmountExpected);
-            expect(await this.token.balanceOf(recipient)).to.be.bignumber.equal(level80AmountExpected);
+            expect(await this.token.balanceOf(anotherAccount)).to.be.bignumber.equal(level77AmountExpected);
+            expect(await this.token.balanceOf(recipient)).to.be.bignumber.equal(level77AmountExpected);
         });
     });
 
