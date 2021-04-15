@@ -16,8 +16,8 @@ abstract contract TimedCrowdsale is Crowdsale {
      */
     modifier onlyWhileOpen {
         // solium-disable-next-line security/no-block-members
-        require(block.timestamp >= openingTime, "TimedCrowdsale: crowdsale not opened");
-        require(block.timestamp <= closingTime, "TimedCrowdsale: crowdsale closed");
+        require(_nowTime() >= openingTime, "TimedCrowdsale: crowdsale not opened");
+        require(_nowTime() <= closingTime, "TimedCrowdsale: crowdsale closed");
         _;
     }
 
@@ -28,7 +28,7 @@ abstract contract TimedCrowdsale is Crowdsale {
      */
     constructor(uint256 _openingTime, uint256 _closingTime) {
         // solium-disable-next-line security/no-block-members
-        require(_openingTime >= block.timestamp, "TimedCrowdsale: incorrect opening time");
+        require(_openingTime >= _nowTime(), "TimedCrowdsale: incorrect closing time");
         require(_closingTime > _openingTime, "TimedCrowdsale: incorrect closing time");
 
         openingTime = _openingTime;
@@ -41,7 +41,7 @@ abstract contract TimedCrowdsale is Crowdsale {
      */
     function hasClosed() public view returns (bool) {
         // solium-disable-next-line security/no-block-members
-        return block.timestamp > closingTime;
+        return _nowTime() > closingTime;
     }
 
     /**
@@ -51,5 +51,13 @@ abstract contract TimedCrowdsale is Crowdsale {
      */
     function _preValidatePurchase(address _beneficiary, uint256 _weiAmount) internal view override onlyWhileOpen {
         super._preValidatePurchase(_beneficiary, _weiAmount);
+    }
+
+    /*
+    * @dev looks like genache returns invalid block.timestamp for testrpc
+    * This function is here to be overrided by mock contract for TESTING PURPOSES ONLY.
+    */
+    function _nowTime() internal virtual view returns (uint256) {
+        return block.timestamp;
     }
 }
