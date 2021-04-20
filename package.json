@@ -10,6 +10,7 @@
     "web3": "^1.3.4",
     "@openzeppelin/test-helpers": "^0.5.10",
     "@openzeppelin/contracts": "4.0.0",
-    "truffle": "^5.2.5"
+    "truffle": "^5.2.5",
+    "@truffle/hdwallet-provider": "1.2.6"
   }
 }
