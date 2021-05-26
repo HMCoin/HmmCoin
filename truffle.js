@@ -3,7 +3,7 @@ const HDWalletProvider = require('@truffle/hdwallet-provider');
 
 module.exports = {
     networks: {
-        mainnet: {
+        ethmainnet: {
             provider: () => new HDWalletProvider(mnemonic, `wss://mainnet.infura.io/ws/v3/${projectId}`),
             network_id: 1,
             gas: 0,
@@ -16,7 +16,8 @@ module.exports = {
         develop: {
             host: "127.0.0.1",
             port: 7545,
-            network_id: 5777
+            network_id: 5777,
+            skipDryRun: true
         },
         ropsten: {
             provider: () => new HDWalletProvider(mnemonic, `wss://ropsten.infura.io/ws/v3/${projectId}`),
@@ -36,11 +37,27 @@ module.exports = {
             skipDryRun: false
             // gasPrice: 10000000000,
         },
+        mumbai: { // Polygon testnet
+            provider: () => new HDWalletProvider(mnemonic, `https://rpc-mumbai.maticvigil.com`),
+            network_id: 80001,
+            // gas: 4500000,
+            // gasPrice: 10000000000,
+            confirmations: 2,
+            networkCheckTimeout: 100000000,
+            timeoutBlocks: 2000,
+            skipDryRun: true
+        }
     },
 
     compilers: {
         solc: {
-            version: "0.8.0"
+            version: "0.8.0",
+            settings: {
+                optimizer: {
+                    enabled: true,
+                    runs: 150000
+                }
+            }
         }
     }
 };

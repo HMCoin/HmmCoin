@@ -15,7 +15,14 @@ module.exports = function(deployer, network) {
             .then(() => token.deployed())
             .then(() => deployer.deploy(giveaway, token.address, 60 * 60));
 
-    } else if (network === "mainnet") {
+    } else if (network === "mumbai") {
+        // var token_address = "0x0d4edD3ACe92E0530FA6aB21e5931AB73e1B7D76";
+        // var giveaway_address = "0x0fFd8DcA0e893BE3918d7f221487c9a8F506a14a";
+        deployer.deploy(token, "HmmCoinTestV1", "HMCT", "0xE598723F2e037DdfcbdBba73D3b6c047f939C83D", "1101101000000000000000000", "101101101000000000000000000")
+            .then(() => token.deployed())
+            .then(() => deployer.deploy(giveaway, token.address, 60 * 60));
+
+    } else if (network === "ethmainnet") {
         deployer.deploy(token, "HmmCoin", "HMC", "...", "1101101000000000000000000", "101101101000000000000000000")
             .then(() => token.deployed())
             .then(() => deployer.deploy(giveaway, token.address, 24 * 60 * 60));

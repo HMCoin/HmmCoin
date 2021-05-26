@@ -1,5 +1,6 @@
 {
   "scripts": {
+    "recompile": "truffle compile --all",
     "test": "truffle compile && truffle migrate --reset --network develop && truffle test",
     "testdebug": "truffle compile && truffle migrate --reset --network develop && truffle test --debug"
   },
