@@ -40,13 +40,19 @@ module.exports = {
         mumbai: { // Polygon testnet
             provider: () => new HDWalletProvider(mnemonic, `https://rpc-mumbai.maticvigil.com`),
             network_id: 80001,
-            // gas: 4500000,
-            // gasPrice: 10000000000,
-            confirmations: 2,
+            confirmations: 5,
             networkCheckTimeout: 100000000,
             timeoutBlocks: 2000,
             skipDryRun: true
-        }
+        },
+        maticmainnet: {
+            provider: () => new HDWalletProvider(mnemonic, `https://rpc-mainnet.maticvigil.com`),
+            network_id: 137,
+            confirmations: 5,
+            networkCheckTimeout: 100000000,
+            timeoutBlocks: 2000,
+            skipDryRun: false
+        },
     },
 
     compilers: {

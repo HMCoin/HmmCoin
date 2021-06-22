@@ -23,6 +23,12 @@ module.exports = function(deployer, network) {
             .then(() => deployer.deploy(giveaway, token.address, 60 * 60));
 
     } else if (network === "ethmainnet") {
+        // token = 0x57d5e972d912c97bdd21483628c78d4c886218ef
+        deployer.deploy(token, "HmmCoin", "HMC", "...", "1101101000000000000000000", "101101101000000000000000000")
+            .then(() => token.deployed())
+            .then(() => deployer.deploy(giveaway, token.address, 24 * 60 * 60));
+
+    } else if (network === "maticmainnet") {
         deployer.deploy(token, "HmmCoin", "HMC", "...", "1101101000000000000000000", "101101101000000000000000000")
             .then(() => token.deployed())
             .then(() => deployer.deploy(giveaway, token.address, 24 * 60 * 60));
