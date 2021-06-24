@@ -46,7 +46,7 @@ module.exports = {
             skipDryRun: true
         },
         maticmainnet: {
-            provider: () => new HDWalletProvider(mnemonic, `https://rpc-mainnet.maticvigil.com`),
+            provider: () => new HDWalletProvider(mnemonic, `https://rpc-mainnet.matic.network`),
             network_id: 137,
             confirmations: 5,
             networkCheckTimeout: 100000000,
