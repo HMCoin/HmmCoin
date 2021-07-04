@@ -27,6 +27,6 @@ contract HmmCoinCrowdsale is CappedCrowdsale {
      */
     function _getTokenAmount(uint256 weiAmount) internal override view returns (uint256)
     {
-        return weiAmount * rate(); // TODO
+        return weiAmount * rate();
     }
 }
