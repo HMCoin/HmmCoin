@@ -36,6 +36,7 @@ module.exports = function(deployer, network) {
     } else if (network === "maticmainnet") {
         // token = 0x6df5c1da0310a0725b919579d06de427cb578c83
         // giveaway = 0xbac146f5863ef1205299a6cf09d4ddee275a12c3
+        // crowdsale = 0x9D5ad3001274b4a30B3Dd0efb5b957a489105D21
         // deployer.deploy(token, "HmmCoin", "HMC", "...", "1101101000000000000000000", "101101101000000000000000000")
         //     .then(() => token.deployed())
         //     .then(() => deployer.deploy(giveaway, token.address, 24 * 60 * 60));
