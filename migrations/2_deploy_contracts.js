@@ -40,6 +40,6 @@ module.exports = function(deployer, network) {
         // deployer.deploy(token, "HmmCoin", "HMC", "...", "1101101000000000000000000", "101101101000000000000000000")
         //     .then(() => token.deployed())
         //     .then(() => deployer.deploy(giveaway, token.address, 24 * 60 * 60));
-        deployer.deploy(crowdsale, 4, "0x6df5c1da0310a0725b919579d06de427cb578c83", "20000000000000000000000000", "...");
+        deployer.deploy(crowdsale, 4, "0x6df5c1da0310a0725b919579d06de427cb578c83", "23000000000000000000000000", "...");
     }
 };
